@@ -1,0 +1,245 @@
+<div class="container center">
+  <mat-card>
+    <mat-card-title>ใบเสนอราคาพนักงานรักษาความปลอดภัย
+    </mat-card-title>
+
+    <mat-card-content>
+      <form class="example-form">
+
+        <div class="row">
+
+
+        </div>
+
+
+        <div class="row">
+
+          <mat-card class="m-3" style="width: 100%; ">
+            <mat-card-content>
+              <button mat-raised-button color="accent" type="button" style="margin-left: 10px;" (click)=onSave()
+                [disabled]="disable">บันทึก</button>
+              <button mat-raised-button color="primary" style="margin-left: 10px;"
+                [disabled]="disable">ออกใบเสนอราคา</button>
+              <button mat-raised-button color="basic" style="margin-left: 10px;">ดาวน์โหลด</button>
+              <button mat-raised-button color="basic" style="margin-left: 10px;">คัดลอก</button>
+              <button mat-raised-button color="basic" style="margin-left: 10px;">ออก</button>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="m-3" style="width: 100%; " *ngIf="error">
+            <mat-card-content>
+              <mat-chip-list aria-label="Fish selection">
+                <mat-chip color="warn" selected *ngFor="let error of errorList">{{error}}</mat-chip>
+              </mat-chip-list>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="m-3" style="width: 100%; ">
+
+            <mat-card-content>
+              <div class="row">
+                <div class="col-md-12">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>สาขาที่ออกใบเสนอราคา</mat-label>
+                    <mat-select [(value)]="officeSelected" [disabled]="disable">
+                      <mat-option *ngFor="let office of saleOffice" [value]="office.AUTO_ID">
+                        {{office.NAME}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>เลขที่ใบเสนอราคา</mat-label>
+                    <input matInput value="" #NO disabled>
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field color="accent" class="example-full-width">
+                    <mat-label>วันที่</mat-label>
+                    <input matInput (focus)="picker1.open()" [matDatepicker]="picker1" #CREATE_DATE
+                      (click)="picker1.open()" readonly [disabled]="disable">
+                    <mat-datepicker-toggle matSuffix [for]="picker1 "></mat-datepicker-toggle>
+                    <mat-datepicker #picker1></mat-datepicker>
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>บริษัท / ชื่อลูกค้า</mat-label>
+                    <mat-select [(value)]="customerSelected" (selectionChange)="onCustomerChange()"
+                      [disabled]="disable">
+                      <mat-option *ngFor="let customer of customers" [value]="customer.AUTO_ID">
+                        {{customer.NAME}}
+                      </mat-option>
+                    </mat-select>
+                    <mat-error *ngIf="error">Please choose an animal</mat-error>
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ชื่อผู้ติดต่อ</mat-label>
+                    <mat-select [(value)]="customerContactSelected"
+                      [disabled]="!customerSelected || filterCustomerContact?.length === 0 || disable">
+                      <mat-option *ngFor="let customerContact of filterCustomerContact"
+                        [value]="customerContact.AUTO_ID">
+                        {{customerContact.NAME}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                </div>
+                <ng-container *ngIf="isBoss === true">
+                  <div class="col-md-12">
+                    <mat-label>หัวหน้า รปภ.</mat-label>
+                  </div>
+
+                  <div class="col-md-6">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>ราคา</mat-label>
+                      <input matInput value="" #BOSS_RATE type="number" required [disabled]="disable">
+                      <mat-hint align="end">บาท</mat-hint>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="col-md-3">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>ภาคกลางวัน</mat-label>
+                      <input matInput value="" type="number" #BOSS_SHIFT_1 [disabled]="disable">
+                      <mat-hint align="end">คน</mat-hint>
+                    </mat-form-field>
+                  </div>
+
+                  <div class="col-md-3">
+                    <mat-form-field class="example-full-width">
+                      <mat-label>ภาคกลางคืน</mat-label>
+                      <input matInput value="" type="number" #BOSS_SHIFT_2 [disabled]="disable">
+                      <mat-hint align="end">คน</mat-hint>
+                    </mat-form-field>
+                  </div>
+
+                </ng-container>
+
+
+                <div class="col-md-12">
+                  <mat-label>รปภ.ชาย</mat-label>
+                </div>
+
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ราคา</mat-label>
+                    <input matInput value="" type="number" #GUARD_MAN_RATE [disabled]="disable">
+                    <mat-hint align="end">บาท</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-3">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ภาคกลางวัน</mat-label>
+                    <input matInput value="" type="number" #GUARD_MAN_SHIFT_1 [disabled]="disable">
+                    <mat-hint align="end">คน</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-3">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ภาคกลางคืน</mat-label>
+                    <input matInput value="" type="number" #GUARD_MAN_SHIFT_2 [disabled]="disable">
+                    <mat-hint align="end">คน</mat-hint>
+                  </mat-form-field>
+                </div>
+
+
+                <div class="col-md-12">
+                  <mat-label>รปภ.หญิง</mat-label>
+                </div>
+
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ราคา</mat-label>
+                    <input matInput value="" type="number" #GUARD_WOMAN_RATE [disabled]="disable">
+                    <mat-hint align="end">บาท</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-3">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ภาคกลางวัน</mat-label>
+                    <input matInput value="" type="number" #GUARD_WOMAN_SHIFT_1 [disabled]="disable">
+                    <mat-hint align="end">คน</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-3">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ภาคกลางคืน</mat-label>
+                    <input matInput value="" type="number" #GUARD_WOMAN_SHIFT_2 [disabled]="disable">
+                    <mat-hint align="end">คน</mat-hint>
+                  </mat-form-field>
+                </div>
+
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>วงเงินประกันต่ออัตรา</mat-label>
+                    <input matInput value="" type="number" #BAIL_RATE [disabled]="disable">
+                    <mat-hint align="end">บาท</mat-hint>
+                  </mat-form-field>
+                </div>
+              </div>
+            </mat-card-content>
+
+          </mat-card>
+
+
+          <mat-card class="m-3" style="width: 100%; ">
+            <mat-card-subtitle>
+              อุปกรณ์เพิ่มพิเศษ <button mat-mini-fab color="warn" type="button" (click)=onAddEquipment()
+                style="float: right;" [disabled]="disable">
+                <mat-icon>add</mat-icon>
+              </button>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div class="row">
+                <div class="col-md-4" style="display: flex;"
+                  *ngFor="let filterEquipment of filterEquipments; let i = index;">
+                  <mat-form-field class="example-full-width" style="width:80%;padding: 5px;">
+                    <mat-label>อุปกรณ์</mat-label>
+                    <mat-select [(value)]="filterEquipments[i].AUTO_ID" [disabled]="disable">
+                      <mat-option *ngFor="let equipment of equipments" [value]="equipment.AUTO_ID">
+                        {{equipment.NAME}}
+                      </mat-option>
+                    </mat-select>
+                  </mat-form-field>
+                  <button mat-stroked-button color="warn" style="height: 35px;margin-top: 15px;"
+                    (click)="onRemoveEquipment(i)" [disabled]="disable">ลบ</button>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+          <mat-card class="m-3" style="width: 100%; ">
+            <mat-card-subtitle>
+              หมายเหตุ
+              <button mat-mini-fab color="warn" type="button" (click)=onAddNote() style="float: right;"
+                [disabled]="disable">
+                <mat-icon>add</mat-icon>
+              </button>
+            </mat-card-subtitle>
+            <mat-card-content>
+              <div class="row">
+                <div class="col-md-12" *ngIf="fakeNotes.length > 0">
+                  <mat-form-field class="example-full-width"
+                    *ngFor="let note of fakeNotes; let i = index;trackBy: trackByFn">
+                    <mat-label>{{i+1+'.'}}</mat-label>
+                    <input matInput [value]="note" (change)=onNoteChange($event,i) [disabled]="disable">
+                  </mat-form-field>
+                </div>
+              </div>
+            </mat-card-content>
+          </mat-card>
+
+
+        </div>
+      </form>
+    </mat-card-content>
+
+  </mat-card>
+</div>

@@ -28,6 +28,8 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/bootstrap/dist/css/bootstrap.min.css",
+              "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",
               "src/styles.less"
             ],
             "scripts": []
@@ -92,6 +94,7 @@
               "src/assets"
             ],
             "styles": [
+              "./node_modules/@angular/material/prebuilt-themes/deeppurple-amber.css",
               "src/styles.less"
             ],
             "scripts": []
@@ -123,6 +126,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "repot"
+    }
+  },
+  "defaultProject": "repot",
+  "cli": {
+    "analytics": "15ca805f-2764-4c98-a5a3-644a2f3ca42d"
+  }
 }
