@@ -1,12 +1,12 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-
+import {URLS} from '../assets/config'
 @Injectable({
   providedIn: 'root'
 })
 export class QuotationService {
 
-  private url: string = "https://localhost:44362/";
+  private url: string = URLS.api
 
   constructor(private http: HttpClient) {
 	}
@@ -21,6 +21,18 @@ export class QuotationService {
 
   getQuotation(id:number) {
 		return this.http.post<any>(this.url + "quotation/getQuotation",{id:id})
+  }
+
+  generateNo(id:number) {
+		return this.http.post<any>(this.url + "quotation/generateNo",{id:id})
+  }
+
+  getListQuotation(payload:string) {
+		return this.http.post<any>(this.url + "quotation/getListQuotation",{payload:payload})
+  }
+
+  getQuotationForReport(id:number) {
+		return this.http.post<any>(this.url + "quotation/getQuotationForReport",{id:id})
 	}
 
 }

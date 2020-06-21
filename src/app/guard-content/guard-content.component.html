@@ -14,17 +14,6 @@
 
         <div class="row">
 
-          <mat-card class="m-3" style="width: 100%; ">
-            <mat-card-content>
-              <button mat-raised-button color="accent" type="button" style="margin-left: 10px;" (click)=onSave()
-                [disabled]="disable">บันทึก</button>
-              <button mat-raised-button color="primary" style="margin-left: 10px;"
-                [disabled]="disable">ออกใบเสนอราคา</button>
-              <button mat-raised-button color="basic" style="margin-left: 10px;">ดาวน์โหลด</button>
-              <button mat-raised-button color="basic" style="margin-left: 10px;">คัดลอก</button>
-              <button mat-raised-button color="basic" style="margin-left: 10px;">ออก</button>
-            </mat-card-content>
-          </mat-card>
 
           <mat-card class="m-3" style="width: 100%; " *ngIf="error">
             <mat-card-content>
@@ -89,7 +78,7 @@
                 </div>
                 <ng-container *ngIf="isBoss === true">
                   <div class="col-md-12">
-                    <mat-label>หัวหน้า รปภ.</mat-label>
+                    <mat-label style="color: #D34346;">หัวหน้า รปภ.</mat-label>
                   </div>
 
                   <div class="col-md-6">
@@ -120,7 +109,7 @@
 
 
                 <div class="col-md-12">
-                  <mat-label>รปภ.ชาย</mat-label>
+                  <mat-label style="color: #D34346;">รปภ.ชาย</mat-label>
                 </div>
 
                 <div class="col-md-6">
@@ -149,7 +138,7 @@
 
 
                 <div class="col-md-12">
-                  <mat-label>รปภ.หญิง</mat-label>
+                  <mat-label style="color: #D34346;">รปภ.หญิง</mat-label>
                 </div>
 
                 <div class="col-md-6">
@@ -192,13 +181,13 @@
           <mat-card class="m-3" style="width: 100%; ">
             <mat-card-subtitle>
               อุปกรณ์เพิ่มพิเศษ <button mat-mini-fab color="warn" type="button" (click)=onAddEquipment()
-                style="float: right;" [disabled]="disable">
+                style="float: right;" *ngIf="!disable">
                 <mat-icon>add</mat-icon>
               </button>
             </mat-card-subtitle>
             <mat-card-content>
               <div class="row">
-                <div class="col-md-4" style="display: flex;"
+                <div class="col-md-6" style="display: flex;"
                   *ngFor="let filterEquipment of filterEquipments; let i = index;">
                   <mat-form-field class="example-full-width" style="width:80%;padding: 5px;">
                     <mat-label>อุปกรณ์</mat-label>
@@ -209,7 +198,7 @@
                     </mat-select>
                   </mat-form-field>
                   <button mat-stroked-button color="warn" style="height: 35px;margin-top: 15px;"
-                    (click)="onRemoveEquipment(i)" [disabled]="disable">ลบ</button>
+                    (click)="onRemoveEquipment(i)"  *ngIf="!disable">ลบ</button>
                 </div>
               </div>
             </mat-card-content>
@@ -218,8 +207,8 @@
           <mat-card class="m-3" style="width: 100%; ">
             <mat-card-subtitle>
               หมายเหตุ
-              <button mat-mini-fab color="warn" type="button" (click)=onAddNote() style="float: right;"
-                [disabled]="disable">
+              <button mat-mini-fab color="warn" type="button" (click)=onAddNote() style="float: right;" *ngIf="!disable"
+                >
                 <mat-icon>add</mat-icon>
               </button>
             </mat-card-subtitle>
@@ -235,6 +224,20 @@
               </div>
             </mat-card-content>
           </mat-card>
+
+          <mat-card class="m-3" style="width: 100%; ">
+            <mat-card-content>
+              <button mat-raised-button color="accent" type="button" style="margin: 10px;" (click)=onSave()
+                [disabled]="disable">บันทึก</button>
+              <button mat-raised-button color="primary" style="margin: 10px;" [disabled]="disable"
+                (click)="onGenerateNo()" [disabled]="disable || !isEditMode">ออกใบเสนอราคา</button>
+              <button mat-raised-button color="basic" style="margin: 10px;" (click)="onDownloadPdf()"
+                [disabled]="!disable">ดาวน์โหลดใบเสนอราคา</button>
+              <button mat-raised-button color="basic" style="margin: 10px;" (click)="onSave(true)" [disabled]="!isEditMode">คัดลอก</button>
+              <button mat-raised-button color="warn" style="margin: 10px;" (click)="onBack()">ออก</button>
+            </mat-card-content>
+          </mat-card>
+
 
 
         </div>

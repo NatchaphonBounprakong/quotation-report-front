@@ -1,29 +1,44 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { GuardContentComponent } from './guard-content/guard-content.component';
+import { GridComponent } from './grid/grid.component';
+import { AuthGuard } from './auth.guard';
+import { AuthComponent } from './auth/auth.component';
+import { LoginGuard } from './login.guard';
 
 
 const routes: Routes = [
   {
     path: '',
-    component: GuardContentComponent
+    component: GridComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'list',
+    component: GridComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'guard',
-    component: GuardContentComponent
+    component: GuardContentComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'guard/:id',
-    component: GuardContentComponent
+    component: GuardContentComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'guard-boss',
-    component: GuardContentComponent
+    component: GuardContentComponent,
+    canActivate: [AuthGuard],
   },
   {
     path: 'guard-boss/:id',
-    component: GuardContentComponent
-  }
+    component: GuardContentComponent,
+    canActivate: [AuthGuard],
+  },
+  { path: 'auth',  canActivate: [LoginGuard],component: AuthComponent }
 
 ];
 

@@ -3,6 +3,8 @@ import { MasterService } from '../master.service';
 import { quotationPaylod } from '../interface/master.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuotationService } from '../quotation.service';
+import { PdfService } from '../pdf.service';
+import { AuthService } from '../auth.service';
 
 interface Food {
   value: string;
@@ -51,9 +53,10 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   @ViewChild('GUARD_WOMAN_SHIFT_2') GUARD_WOMAN_SHIFT_2: ElementRef;
   @ViewChild('BAIL_RATE') BAIL_RATE: ElementRef;
   @ViewChild('CREATE_DATE') CREATE_DATE: ElementRef;
+  @ViewChild('NO') NO: ElementRef;
 
 
-  constructor(private masterService: MasterService, private quotationService: QuotationService, private route: ActivatedRoute, private router: Router) { }
+  constructor(private masterService: MasterService, private quotationService: QuotationService,private authService:AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService) { }
 
   ngAfterViewInit(): void {
 
@@ -81,6 +84,15 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
       }
     })
 
+  }
+
+  onDownloadPdf() {
+    this.quotationService.getQuotationForReport(this.id).subscribe(o => {
+      if (o.status) {
+        this.pdfService.download(o.result)
+      }
+    })
+    //
   }
 
   ngOnInit(): void {
@@ -111,18 +123,22 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
     this.GUARD_WOMAN_SHIFT_1.nativeElement.value = this.quotation.GUARD_WOMAN_SHIFT_1
     this.GUARD_WOMAN_SHIFT_2.nativeElement.value = this.quotation.GUARD_WOMAN_SHIFT_2
     this.BAIL_RATE.nativeElement.value = this.quotation.BAIL_RATE
+    this.NO.nativeElement.value = this.quotation.NO
     if (this.quotation.CREATE_DATE) {
 
       if (this.quotation.CREATE_DATE.indexOf("Date(") > -1) {
         var dateNum = +this.quotation.CREATE_DATE.match(/\d+/)[0];
         var date = new Date(dateNum);
-        this.CREATE_DATE.nativeElement.value = date.getMonth() + '/' + date.getDate() + '/' + date.getFullYear()
+        this.CREATE_DATE.nativeElement.value = (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear()
       }
 
     }
 
     if (this.quotation.NO !== "" && this.quotation.NO !== null) {
       this.disable = true
+    }
+    else{
+      this.disable = false
     }
 
 
@@ -156,7 +172,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
     }
   }
 
-  onSave() {
+  onSave(isCopy: boolean = false) {
     if (this.validate()) {
       if (confirm("ต้องการบันทึกข้อมูลใช่หรือไม่?")) {
         let quotation: quotationPaylod = {
@@ -177,21 +193,36 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
           BAIL_RATE: +this.BAIL_RATE.nativeElement.value,
           CREATE_DATE: this.CREATE_DATE.nativeElement.value,
           CONTACT_ID: this.customerContactSelected,
-          SALE_OFFICE_ID: this.officeSelected
+          SALE_OFFICE_ID: this.officeSelected,
+          EMPLOYEE_ID:this.authService.user.id,
         }
         let payload = JSON.stringify(quotation);
         if (this.isEditMode) {
-          this.quotationService.editQuotation(payload).subscribe(o => {
-            if (o.status) {
-              !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
-              alert("บันทึกข้อมูลเรียบร้อย");
-            }
-            else {
-              alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
-            }
+          if (isCopy) {
+            quotation.AUTO_ID = 0,
+              quotation.TYPE = this.isBoss ? 2 : 1,
+              this.quotationService.saveQuotation(payload).subscribe(o => {
+                if (o.status) {
+                  !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
+                  alert("บันทึกข้อมูลเรียบร้อย");
+                }
+                else {
+                  alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
+                }
+              }
+              );
           }
-
-          );
+          else {
+            this.quotationService.editQuotation(payload).subscribe(o => {
+              if (o.status) {
+                !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
+                alert("บันทึกข้อมูลเรียบร้อย");
+              }
+              else {
+                alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
+              }
+            });
+          }
         }
         else {
           this.quotationService.saveQuotation(payload).subscribe(o => {
@@ -237,6 +268,23 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   onNoteChange($event, i) {
     this.fakeNotes[i] = $event.target.value;
     this.notes[i] = $event.target.value;
+  }
+
+  onGenerateNo() {
+    if (confirm("ต้องการออกใบเสนอราคาหรือไม่? *จะไม่สามารถแก้ไขข้อมูลได้อีก")) {
+      this.quotationService.generateNo(this.id).subscribe(o => {
+        if (o.status) {
+          this.NO.nativeElement.value = o.result
+          this.disable = true
+          alert("บันทึกข้อมูลเรียบร้อย");
+          this.pdfService.download(o.message);
+        }
+      })
+    }
+  }
+
+  onBack() {
+    this.router.navigate(['list'])
   }
 
   trackByFn(i: number) {
