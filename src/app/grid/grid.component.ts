@@ -40,7 +40,7 @@ export class GridComponent implements OnInit, AfterViewInit {
   @ViewChild('START_DATE') START_DATE: ElementRef;
   @ViewChild('END_DATE') END_DATE: ElementRef;
   @ViewChild('EMPLOYEE_NAME') EMPLOYEE_NAME: ElementRef;
-
+  loading = false
 
   ngAfterViewInit(): void {
     this.dtOptions = {
@@ -63,12 +63,16 @@ export class GridComponent implements OnInit, AfterViewInit {
     }
 
     let payload = JSON.stringify(filter)
-
+    this.loading = true;
     this.service.getListQuotation(payload).subscribe(o => {
       if (o.status) {
         this.quotaions = o.result;
         this.dtTrigger.next();
+        this.loading = false;
+      }else{
+        this.loading = false;
       }
+
     })
   }
 
@@ -89,6 +93,7 @@ export class GridComponent implements OnInit, AfterViewInit {
       customer_contact:this.CUSTOMER_CONTACT.nativeElement.value,
       no:this.NO.nativeElement.value,
     }
+    this.loading = true;
     let payload = JSON.stringify(filter)
     this.service.getListQuotation(payload).subscribe(o => {
       if (o.status) {
@@ -99,8 +104,11 @@ export class GridComponent implements OnInit, AfterViewInit {
           this.quotaions = o.result;
           // Call the dtTrigger to rerender again
           this.dtTrigger.next();
+
         });
       }
+
+      this.loading = false;
     })
   }
 }

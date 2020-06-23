@@ -30,6 +30,10 @@ import {MatPaginatorModule} from '@angular/material/paginator';
 import { DataTablesModule } from 'angular-datatables';
 import {MatExpansionModule} from '@angular/material/expansion';
 import { AuthComponent } from './auth/auth.component';
+import { LocationStrategy, HashLocationStrategy } from '@angular/common';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatRadioModule} from '@angular/material/radio';
 
 @NgModule({
   declarations: [
@@ -66,9 +70,13 @@ import { AuthComponent } from './auth/auth.component';
     MatTableModule,
     MatPaginatorModule,
     DataTablesModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatExpansionModule,
+    MatProgressSpinnerModule,
+    MatCheckboxModule,
+    MatRadioModule
   ],
-  providers: [],
+  providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [AppComponent],
 })
 export class AppModule { }

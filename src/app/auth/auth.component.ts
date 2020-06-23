@@ -10,7 +10,8 @@ import { AuthService } from '../auth.service';
 export class AuthComponent implements OnInit {
   @ViewChild('ID') ID: ElementRef;
   @ViewChild('PASSWORD') PASSWORD: ElementRef;
-
+  loading = false
+  loadingButton=false;
   constructor(private router: Router, private service: AuthService) { }
 
   ngOnInit(): void {
@@ -18,16 +19,20 @@ export class AuthComponent implements OnInit {
   }
 
   onLogin() {
+    this.loading = true
     this.service.login(this.ID.nativeElement.value, this.PASSWORD.nativeElement.value)
     .subscribe(o=>{
       if(o.status){
         this.router.navigate(['/list']);
       }
+      this.loading = false
     })
   }
 
   onLogout() {
+    this.loading = true
     this.service.logout();
+    this.loading = false
     this.router.navigate(['/auth']);
   }
 

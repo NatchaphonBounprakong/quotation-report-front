@@ -29,7 +29,7 @@
               <div class="row">
                 <div class="col-md-12">
                   <mat-form-field class="example-full-width">
-                    <mat-label>สาขาที่ออกใบเสนอราคา</mat-label>
+                    <mat-label>สาขาที่ออกใบเสนอราคา<i style="color: #D34346;">*</i></mat-label>
                     <mat-select [(value)]="officeSelected" [disabled]="disable">
                       <mat-option *ngFor="let office of saleOffice" [value]="office.AUTO_ID">
                         {{office.NAME}}
@@ -39,13 +39,13 @@
                 </div>
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>เลขที่ใบเสนอราคา</mat-label>
+                    <mat-label>เลขที่ใบเสนอราคา<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" #NO disabled>
                   </mat-form-field>
                 </div>
                 <div class="col-md-6">
                   <mat-form-field color="accent" class="example-full-width">
-                    <mat-label>วันที่</mat-label>
+                    <mat-label>วันที่<i style="color: #D34346;">*</i></mat-label>
                     <input matInput (focus)="picker1.open()" [matDatepicker]="picker1" #CREATE_DATE
                       (click)="picker1.open()" readonly [disabled]="disable">
                     <mat-datepicker-toggle matSuffix [for]="picker1 "></mat-datepicker-toggle>
@@ -54,19 +54,19 @@
                 </div>
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>บริษัท / ชื่อลูกค้า</mat-label>
+                    <mat-label>บริษัท / ชื่อลูกค้า <i style="color: #D34346;">*</i></mat-label>
                     <mat-select [(value)]="customerSelected" (selectionChange)="onCustomerChange()"
                       [disabled]="disable">
                       <mat-option *ngFor="let customer of customers" [value]="customer.AUTO_ID">
                         {{customer.NAME}}
                       </mat-option>
                     </mat-select>
-                    <mat-error *ngIf="error">Please choose an animal</mat-error>
+                    <mat-error *ngIf="error">Please choose an customer</mat-error>
                   </mat-form-field>
                 </div>
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ชื่อผู้ติดต่อ</mat-label>
+                    <mat-label>ชื่อผู้ติดต่อ<i style="color: #D34346;">*</i></mat-label>
                     <mat-select [(value)]="customerContactSelected"
                       [disabled]="!customerSelected || filterCustomerContact?.length === 0 || disable">
                       <mat-option *ngFor="let customerContact of filterCustomerContact"
@@ -76,30 +76,30 @@
                     </mat-select>
                   </mat-form-field>
                 </div>
-                <ng-container *ngIf="isBoss === true">
-                  <div class="col-md-12">
-                    <mat-label style="color: #D34346;">หัวหน้า รปภ.</mat-label>
+                <ng-container >
+                  <div class="col-md-12" [hidden] = "!isBoss" >
+                    <mat-label style="color: #D34346;">หัวหน้า รปภ.<i style="color: #D34346;">*</i></mat-label>
                   </div>
 
-                  <div class="col-md-6">
+                  <div class="col-md-6" [hidden] = "!isBoss" >
                     <mat-form-field class="example-full-width">
-                      <mat-label>ราคา</mat-label>
-                      <input matInput value="" #BOSS_RATE type="number" required [disabled]="disable">
+                      <mat-label>ราคา<i style="color: #D34346;">*</i></mat-label>
+                      <input matInput value="" #BOSS_RATE type="number" [disabled]="disable">
                       <mat-hint align="end">บาท</mat-hint>
                     </mat-form-field>
                   </div>
 
-                  <div class="col-md-3">
+                  <div class="col-md-3" [hidden] = "!isBoss" >
                     <mat-form-field class="example-full-width">
-                      <mat-label>ภาคกลางวัน</mat-label>
+                      <mat-label>ภาคกลางวัน<i style="color: #D34346;">*</i></mat-label>
                       <input matInput value="" type="number" #BOSS_SHIFT_1 [disabled]="disable">
                       <mat-hint align="end">คน</mat-hint>
                     </mat-form-field>
                   </div>
 
-                  <div class="col-md-3">
+                  <div class="col-md-3" [hidden] = "!isBoss" >
                     <mat-form-field class="example-full-width">
-                      <mat-label>ภาคกลางคืน</mat-label>
+                      <mat-label>ภาคกลางคืน<i style="color: #D34346;">*</i></mat-label>
                       <input matInput value="" type="number" #BOSS_SHIFT_2 [disabled]="disable">
                       <mat-hint align="end">คน</mat-hint>
                     </mat-form-field>
@@ -109,12 +109,12 @@
 
 
                 <div class="col-md-12">
-                  <mat-label style="color: #D34346;">รปภ.ชาย</mat-label>
+                  <mat-label style="color: #D34346;">รปภ.ชาย<i style="color: #D34346;">*</i></mat-label>
                 </div>
 
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ราคา</mat-label>
+                    <mat-label>ราคา<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #GUARD_MAN_RATE [disabled]="disable">
                     <mat-hint align="end">บาท</mat-hint>
                   </mat-form-field>
@@ -122,7 +122,7 @@
 
                 <div class="col-md-3">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ภาคกลางวัน</mat-label>
+                    <mat-label>ภาคกลางวัน<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #GUARD_MAN_SHIFT_1 [disabled]="disable">
                     <mat-hint align="end">คน</mat-hint>
                   </mat-form-field>
@@ -130,7 +130,7 @@
 
                 <div class="col-md-3">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ภาคกลางคืน</mat-label>
+                    <mat-label>ภาคกลางคืน<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #GUARD_MAN_SHIFT_2 [disabled]="disable">
                     <mat-hint align="end">คน</mat-hint>
                   </mat-form-field>
@@ -138,12 +138,12 @@
 
 
                 <div class="col-md-12">
-                  <mat-label style="color: #D34346;">รปภ.หญิง</mat-label>
+                  <mat-label style="color: #D34346;">รปภ.หญิง<i style="color: #D34346;">*</i></mat-label>
                 </div>
 
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ราคา</mat-label>
+                    <mat-label>ราคา<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #GUARD_WOMAN_RATE [disabled]="disable">
                     <mat-hint align="end">บาท</mat-hint>
                   </mat-form-field>
@@ -151,7 +151,7 @@
 
                 <div class="col-md-3">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ภาคกลางวัน</mat-label>
+                    <mat-label>ภาคกลางวัน<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #GUARD_WOMAN_SHIFT_1 [disabled]="disable">
                     <mat-hint align="end">คน</mat-hint>
                   </mat-form-field>
@@ -159,7 +159,7 @@
 
                 <div class="col-md-3">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ภาคกลางคืน</mat-label>
+                    <mat-label>ภาคกลางคืน<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #GUARD_WOMAN_SHIFT_2 [disabled]="disable">
                     <mat-hint align="end">คน</mat-hint>
                   </mat-form-field>
@@ -167,7 +167,7 @@
 
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>วงเงินประกันต่ออัตรา</mat-label>
+                    <mat-label>วงเงินประกันต่ออัตรา<i style="color: #D34346;">*</i></mat-label>
                     <input matInput value="" type="number" #BAIL_RATE [disabled]="disable">
                     <mat-hint align="end">บาท</mat-hint>
                   </mat-form-field>

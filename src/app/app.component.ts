@@ -7,8 +7,10 @@ import { AuthService } from './auth.service';
   styleUrls: ['./app.component.less']
 })
 export class AppComponent {
-  title = 'repot';
+  title = 'Quotation';
+  isLoading = false;
   showFiller = false;
+
   constructor(private authService: AuthService) {}
 
   ngOnInit() {

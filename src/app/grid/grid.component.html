@@ -59,7 +59,9 @@
 
   <mat-card class="mt-3">
     <mat-card-content>
-      <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="display responsive nowrap cell-border"
+      <mat-spinner style="margin: auto;" *ngIf="loading"></mat-spinner>
+      <div [hidden]="loading">
+        <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="display responsive nowrap cell-border"
         width="100%">
         <thead>
           <tr>
@@ -97,6 +99,7 @@
           </tr>
         </tbody>
       </table>
+      </div>
     </mat-card-content>
   </mat-card>
 
