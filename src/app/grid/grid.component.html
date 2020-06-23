@@ -19,14 +19,25 @@
         </div>
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
-            <mat-label>ชื่อบริษัท/ลูกค้า</mat-label>
-            <input matInput value="" #CUSTOMER>
+            <mat-label>บริษัท / ชื่อลูกค้า</mat-label>
+            <input type="text" matInput [matAutocomplete]="auto" [formControl]="myControl" #CUSTOMER >
+            <mat-autocomplete autoActiveFirstOption  #auto="matAutocomplete">
+              <mat-option *ngFor="let customer of filteredOptions | async" [value]="customer.NAME">
+                {{customer.NAME}}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </div>
+
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
             <mat-label>ชื่อผู้ติดต่อ</mat-label>
-            <input matInput value="" #CUSTOMER_CONTACT>
+            <input type="text" matInput [matAutocomplete]="autoCustomer" [formControl]="myControl2" #CUSTOMER_CONTACT>
+            <mat-autocomplete autoActiveFirstOption  #autoCustomer="matAutocomplete">
+              <mat-option *ngFor="let customerContact of filteredOptions2 | async" [value]="customerContact">
+                {{customerContact}}
+              </mat-option>
+            </mat-autocomplete>
           </mat-form-field>
         </div>
         <div class="col-md-4 col-xs-6">
@@ -45,12 +56,19 @@
             <mat-datepicker #picker2></mat-datepicker>
           </mat-form-field>
         </div>
-        <div class="col-md-4 col-xs-6">
+        <div class="col-md-4 col-xs-6" [hidden]="true">
           <mat-form-field class="example-full-width">
             <mat-label>สร้างโดย</mat-label>
             <input matInput value="" #EMPLOYEE_NAME>
           </mat-form-field>
         </div>
+
+
+
+
+
+
+
 
       </div>
       <button mat-raised-button color="primary" (click)="onSearch()">ค้นหา</button>
@@ -62,43 +80,43 @@
       <mat-spinner style="margin: auto;" *ngIf="loading"></mat-spinner>
       <div [hidden]="loading">
         <table datatable [dtOptions]="dtOptions" [dtTrigger]="dtTrigger" class="display responsive nowrap cell-border"
-        width="100%">
-        <thead>
-          <tr>
-            <th>จัดการ
-            </th>
-            <th>เลขใบเสนอราคา
-            </th>
-            <th>ลูกค้า
-            </th>
-            <th>ผู้ติดต่อ
-            </th>
-            <th>วันที่ออกใบเสนอราคา
-            </th>
-            <th>ออกใบเสนอราคาโดย (sale)
-            </th>
-            <th>ราคาสุทธิ
-            </th>
-            <th>Sale Office
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let quota of quotaions">
-            <td><button mat-raised-button [color]="quota.NO === 'ยังไม่ได้ออกใบเสนอราคา' ? 'warn' : 'primary'"
-                style="width: 100%;"
-                (click)=onNavigateGuard(quota.AUTO_ID)>{{quota.NO === "ยังไม่ได้ออกใบเสนอราคา" ? 'แก้ไข' : 'ดู'}}</button>
-            </td>
-            <td>{{quota.NO}}</td>
-            <td>{{quota.CUSTOMER}}</td>
-            <td>{{quota.CUSTOMER_CONTACT}}</td>
-            <td>{{quota.CREATE_DATE}}</td>
-            <td>{{quota.EMPLOYEE_NAME}}</td>
-            <td>{{quota.TOTAL}}</td>
-            <td>{{quota.SALE_OFFICE}}</td>
-          </tr>
-        </tbody>
-      </table>
+          width="100%">
+          <thead>
+            <tr>
+              <th>จัดการ
+              </th>
+              <th>เลขใบเสนอราคา
+              </th>
+              <th>ลูกค้า
+              </th>
+              <th>ผู้ติดต่อ
+              </th>
+              <th>วันที่ออกใบเสนอราคา
+              </th>
+              <th>ออกใบเสนอราคาโดย (sale)
+              </th>
+              <th>ราคาสุทธิ
+              </th>
+              <th>Sale Office
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let quota of quotaions">
+              <td><button mat-raised-button [color]="quota.NO === 'ยังไม่ได้ออกใบเสนอราคา' ? 'warn' : 'primary'"
+                  style="width: 100%;"
+                  (click)=onNavigateGuard(quota.AUTO_ID)>{{quota.NO === "ยังไม่ได้ออกใบเสนอราคา" ? 'แก้ไข' : 'ดู'}}</button>
+              </td>
+              <td>{{quota.NO}}</td>
+              <td>{{quota.CUSTOMER}}</td>
+              <td>{{quota.CUSTOMER_CONTACT}}</td>
+              <td>{{quota.CREATE_DATE}}</td>
+              <td>{{quota.EMPLOYEE_NAME}}</td>
+              <td>{{quota.TOTAL}}</td>
+              <td>{{quota.SALE_OFFICE}}</td>
+            </tr>
+          </tbody>
+        </table>
       </div>
     </mat-card-content>
   </mat-card>

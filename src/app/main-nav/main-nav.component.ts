@@ -39,8 +39,11 @@ export class MainNavComponent implements OnInit {
   }
 
   onLogout() {
-    this.service.logout();
-    this.router.navigate(['/auth']);
+    if(confirm("ต้องการออกจากระบบ?")){
+      this.service.logout();
+      this.router.navigate(['/auth']);
+    }
+
   }
 
 }
