@@ -5,7 +5,9 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { QuotationService } from '../quotation.service';
 import { PdfService } from '../pdf.service';
 import { AuthService } from '../auth.service';
-
+import { forkJoin } from 'rxjs';
+import { FormControl } from '@angular/forms';
+import { saveAs } from 'file-saver';
 interface Food {
   value: string;
   viewValue: string;
@@ -33,7 +35,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   isEditMode: boolean = false;
   quotation: any = null;
   disable: boolean = false
-
+  date = null;
 
   customerSelected = null;
   customerContactSelected = null;
@@ -41,6 +43,9 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   error: boolean = false;
   errorList: any[]
+
+  loading: boolean = false;
+  loadingButton: boolean = false;
 
   @ViewChild('BOSS_RATE') BOSS_RATE: ElementRef;
   @ViewChild('BOSS_SHIFT_1') BOSS_SHIFT_1: ElementRef;
@@ -56,11 +61,14 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   @ViewChild('NO') NO: ElementRef;
 
 
-  constructor(private masterService: MasterService, private quotationService: QuotationService,private authService:AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService) { }
+  constructor(private masterService: MasterService, private quotationService: QuotationService, private authService: AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService) { }
 
   ngAfterViewInit(): void {
+  }
 
+  onLoadQuota() {
 
+    this.loading = false;
     let route = this.router.url
     if (route.indexOf('guard-boss') > -1) {
       this.isBoss = true;
@@ -76,27 +84,38 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
           if (data.status) {
             this.quotation = data.result
             this.setData()
+
           }
           else {
 
           }
+          this.loading = false;
         })
+      } else {
+        this.date = new FormControl(new Date())
       }
     })
 
   }
 
   onDownloadPdf() {
+    this.loadingButton = true;
     this.quotationService.getQuotationForReport(this.id).subscribe(o => {
       if (o.status) {
-        this.pdfService.download(o.result)
+        this.pdfService.download(o.result).subscribe(k => {
+          this.loadingButton = false;
+          var blob = new Blob([k], { type: 'application/pdf' });
+          saveAs(blob, 'Quotation' + o.result.no + '.pdf');
+
+        })
       }
+
     })
-    //
   }
 
   ngOnInit(): void {
     this.onFetchMasterData();
+
   }
 
   setData() {
@@ -137,7 +156,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
     if (this.quotation.NO !== "" && this.quotation.NO !== null) {
       this.disable = true
     }
-    else{
+    else {
       this.disable = false
     }
 
@@ -161,8 +180,68 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
       this.errorList.push("เลือกชื่อผู้ติดต่อ")
     }
 
+    let bali = this.BAIL_RATE.nativeElement.value;
+    if (bali === "" || bali === null || bali === 0) {
+      this.errorList.push("ใส่วงเงินประกัน")
+    }
+
+    if (this.isBoss) {
+      if (this.BOSS_RATE.nativeElement.value === "" || this.BOSS_RATE.nativeElement.value === null || this.BOSS_RATE.nativeElement.value === 0) {
+        this.errorList.push("ใส่ราคาหัวหน้า รปภ.")
+      } else {
+        let boss1 = this.BOSS_SHIFT_1.nativeElement.value;
+        let boss2 = this.BOSS_SHIFT_2.nativeElement.value;
+        if ((boss1 === "" || boss1 === null || boss1 === 0) && (boss2 === "" || boss2 === null || boss2 === 0)) {
+          this.errorList.push("ใส่จำนวนหัวหน้า รปภ.")
+        }
+      }
+    } else {
+      let manRate = this.GUARD_MAN_RATE.nativeElement.value
+      let womanRate = this.GUARD_WOMAN_RATE.nativeElement.value
+      if ((manRate === "" || manRate === null || manRate === 0) && (womanRate === "" || womanRate === null || womanRate === 0)) {
+        this.errorList.push("ใส่ราคา รปภ. ชายหรือหญิง")
+      } else {
+        let man1 = this.GUARD_MAN_SHIFT_1.nativeElement.value;
+        let man2 = this.GUARD_MAN_SHIFT_2.nativeElement.value;
+        let woman1 = this.GUARD_WOMAN_SHIFT_1.nativeElement.value;
+        let woman2 = this.GUARD_WOMAN_SHIFT_2.nativeElement.value;
+
+        if (manRate !== "" && manRate !== null && manRate !== 0) {
+          if ((man1 === "" || man1 === null || man1 === 0) && (man2 === "" || man2 === null || man2 === 0)) {
+            this.errorList.push("ใส่จำนวน รปภ. ชาย")
+          }
+        }
+
+        if (womanRate !== "" && womanRate !== null && womanRate !== 0) {
+          if ((woman1 === "" || woman1 === null || woman1 === 0) && (woman2 === "" || woman2 === null || woman2 === 0)) {
+            this.errorList.push("ใส่จำนวน รปภ. หญิง")
+          }
+        }
+
+        if ((man1 !== "" && man1 !== null && man1 !== 0) || (man2 !== "" && man2 !== null && man2 !== 0)) {
+          if (manRate === "" || manRate === null || manRate === 0) {
+            this.errorList.push("ใส่ราคา รปภ. ชาย")
+          }
+        }
+
+        if ((woman1 !== "" && woman1 !== null && woman1 !== 0) || (woman2 !== "" && woman2 !== null && woman2 !== 0)) {
+
+          if (womanRate === "" || womanRate === null || womanRate === 0) {
+            this.errorList.push("ใส่ราคา รปภ. หญิง")
+          }
+        }
+
+      }
+
+
+    }
+
+
+
 
     if (this.errorList.length > 0) {
+      const element = document.querySelector('#scrollId');
+      element.scrollIntoView();
       this.error = true;
       return false;
     }
@@ -174,6 +253,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   onSave(isCopy: boolean = false) {
     if (this.validate()) {
+      this.loading = true;
       if (confirm("ต้องการบันทึกข้อมูลใช่หรือไม่?")) {
         let quotation: quotationPaylod = {
           AUTO_ID: this.isEditMode ? this.id : 0,
@@ -194,9 +274,11 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
           CREATE_DATE: this.CREATE_DATE.nativeElement.value,
           CONTACT_ID: this.customerContactSelected,
           SALE_OFFICE_ID: this.officeSelected,
-          EMPLOYEE_ID:this.authService.user.id,
+          EMPLOYEE_ID: this.authService.user.id,
         }
+
         let payload = JSON.stringify(quotation);
+
         if (this.isEditMode) {
           if (isCopy) {
             quotation.AUTO_ID = 0,
@@ -209,6 +291,8 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
                 else {
                   alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
                 }
+
+                this.loading = false;
               }
               );
           }
@@ -221,6 +305,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
               else {
                 alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
               }
+              this.loading = false;
             });
           }
         }
@@ -233,6 +318,8 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
             else {
               alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
             }
+
+            this.loading = false;
           }
           );
         }
@@ -272,13 +359,16 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   onGenerateNo() {
     if (confirm("ต้องการออกใบเสนอราคาหรือไม่? *จะไม่สามารถแก้ไขข้อมูลได้อีก")) {
+      this.loading = true;
       this.quotationService.generateNo(this.id).subscribe(o => {
         if (o.status) {
           this.NO.nativeElement.value = o.result
+          this.id = +o.message
           this.disable = true
           alert("บันทึกข้อมูลเรียบร้อย");
-          this.pdfService.download(o.message);
+          this.onDownloadPdf()
         }
+        this.loading = false;
       })
     }
   }
@@ -291,71 +381,47 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
     return i;
   }
 
-  testFunc() {
 
-    let quotation: quotationPaylod = {
-      AUTO_ID: 0,
-      NO: "",
-      EQUIPMENT_ID: this.filterEquipments.map(o => o.AUTO_ID),
-      NOTE: this.notes,
-      TYPE: this.isBoss ? 2 : 1,
-      BOSS_RATE: this.BOSS_RATE ? +this.BOSS_RATE.nativeElement.value : 0,
-      BOSS_SHIFT_1: +this.BOSS_SHIFT_1 ? +this.BOSS_SHIFT_1.nativeElement.value : 0,
-      BOSS_SHIFT_2: +this.BOSS_SHIFT_2 ? +this.BOSS_SHIFT_2.nativeElement.value : 0,
-      GUARD_MAN_RATE: +this.GUARD_MAN_RATE.nativeElement.value,
-      GUARD_MAN_SHIFT_1: +this.GUARD_MAN_SHIFT_1.nativeElement.value,
-      GUARD_MAN_SHIFT_2: +this.GUARD_MAN_SHIFT_2.nativeElement.value,
-      GUARD_WOMAN_RATE: +this.GUARD_WOMAN_RATE.nativeElement.value,
-      GUARD_WOMAN_SHIFT_1: +this.GUARD_WOMAN_SHIFT_1.nativeElement.value,
-      GUARD_WOMAN_SHIFT_2: +this.GUARD_WOMAN_SHIFT_2.nativeElement.value,
-      BAIL_RATE: +this.BAIL_RATE.nativeElement.value,
-      CREATE_DATE: this.CREATE_DATE.nativeElement.value,
-      CONTACT_ID: this.customerContactSelected,
-      SALE_OFFICE_ID: this.officeSelected
-    }
-
-    console.log(quotation);
-
-  }
 
   onFetchMasterData() {
-    this.masterService.fetchEquipment().subscribe(data => {
-      if (data.status) {
-        this.equipments = data.result;
+
+    this.loading = true;
+    forkJoin([this.masterService.fetchEquipment(), this.masterService.fetchCustomers(), this.masterService.fetchCustomerContact(), this.masterService.fetchSaleOffice()]).subscribe(results => {
+      if (results[0].status) {
+        this.equipments = results[0].result;
         if (!this.isEditMode) {
           this.filterEquipments = this.equipments.filter(o => o.TYPE === 1);
-          console.log(this.filterEquipments)
+
         }
       }
       else {
 
       }
 
-    })
-    this.masterService.fetchCustomers().subscribe(data => {
-      if (data.status) {
-        this.customers = data.result.filter(o => o.CUSTOMER_CONTACT.length > 0);
+
+      if (results[1].status) {
+        this.customers = results[1].result.filter(o => o.CUSTOMER_CONTACT.length > 0);
       }
       else {
 
       }
-    })
-    this.masterService.fetchCustomerContact().subscribe(data => {
-      if (data.status) {
-        this.customerContact = data.result;
+
+      if (results[2].status) {
+        this.customerContact = results[2].result;
       }
       else {
-
       }
-    })
-    this.masterService.fetchSaleOffice().subscribe(data => {
-      if (data.status) {
-        this.saleOffice = data.result;
+
+      if (results[3].status) {
+        this.saleOffice = results[3].result;
       }
       else {
-
       }
-    })
+
+      this.loading = false;
+    }, err => { }, () => {
+      this.onLoadQuota()
+    });
   }
 
 }

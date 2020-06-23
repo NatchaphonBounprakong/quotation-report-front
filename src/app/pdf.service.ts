@@ -15,17 +15,12 @@ export class PdfService {
 
   header: HttpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' })
   download(data: any) {
-    this.http.post(URLS.report, {
+    return this.http.post(URLS.report, {
       "template": {
         "name": "/Quota/Invoice"
       },
       "data": data
-    }, { headers: this.header, responseType: 'blob' }).subscribe(o => {
-
-      var blob = new Blob([o], { type: 'application/pdf' });
-      saveAs(blob, 'Quotation' + data.no + '.pdf');
-
-    })
+    }, { headers: this.header, responseType: 'blob' })
 
   };
 
