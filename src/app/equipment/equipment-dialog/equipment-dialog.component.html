@@ -1,0 +1,22 @@
+<div mat-dialog-content>
+  <mat-form-field style="width: 100%;margin-top: 10px;">
+    <mat-label>ชื่ออุปกรณ์</mat-label>
+    <input matInput [(ngModel)]="data.name">
+  </mat-form-field>
+  <mat-form-field style="width: 100%;">
+    <mat-label>ประเภทอุปกรณ์</mat-label>
+    <mat-select [(value)]="data.type">
+      <mat-option value="1">
+        อุปกรณ์เริ่มต้น
+      </mat-option>
+      <mat-option value="2">
+        อุปกรณ์เพิ่มเติม
+      </mat-option>
+    </mat-select>
+  </mat-form-field>
+</div>
+<div mat-dialog-actions>
+
+  <button mat-button  (click)="onOkClick()" cdkFocusInitial>บันทึก</button>
+  <button mat-button (click)="onNoClick()">ยกเลิก</button>
+</div>

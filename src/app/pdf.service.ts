@@ -14,10 +14,10 @@ export class PdfService {
   }
 
   header: HttpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' })
-  download(data: any) {
+  download(data: any,boss:boolean) {
     return this.http.post(URLS.report, {
       "template": {
-        "name": "/Quota/Invoice"
+        "name": boss ? "/Quota/Invoice" : "/Quota-Guard/Invoice"
       },
       "data": data
     }, { headers: this.header, responseType: 'blob' })

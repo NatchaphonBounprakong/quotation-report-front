@@ -1,13 +1,20 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { MasterService } from '../master.service';
 import { quotationPaylod } from '../interface/master.interface';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuotationService } from '../quotation.service';
 import { PdfService } from '../pdf.service';
 import { AuthService } from '../auth.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { saveAs } from 'file-saver';
+import { startWith, map } from 'rxjs/operators';
+import {
+  MatSnackBar, MatSnackBarHorizontalPosition,
+  MatSnackBarVerticalPosition,
+} from '@angular/material/snack-bar';
+import { ErrorSnackComponent } from '../error-snack/error-snack.component';
+
 interface Food {
   value: string;
   viewValue: string;
@@ -18,7 +25,7 @@ interface Food {
   templateUrl: './guard-content.component.html',
   styleUrls: ['./guard-content.component.less']
 })
-export class GuardContentComponent implements OnInit, AfterViewInit {
+export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
 
   equipments: any[] = []
   customers: any[] = []
@@ -28,7 +35,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   filterEquipments: any[] = []
   fakeNotes: string[] = [""]
   notes: string[] = [""]
-
+  equipmentAvailable: any[]
   id: number
   type: number
   isBoss: boolean;
@@ -36,17 +43,15 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   quotation: any = null;
   disable: boolean = false
   date = null;
-
   customerSelected = null;
   customerContactSelected = null;
   officeSelected = null;
-
   error: boolean = false;
   errorList: any[]
 
   loading: boolean = false;
   loadingButton: boolean = false;
-
+  avalibleEquipment: Observable<any>;
   @ViewChild('BOSS_RATE') BOSS_RATE: ElementRef;
   @ViewChild('BOSS_SHIFT_1') BOSS_SHIFT_1: ElementRef;
   @ViewChild('BOSS_SHIFT_2') BOSS_SHIFT_2: ElementRef;
@@ -59,12 +64,28 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
   @ViewChild('BAIL_RATE') BAIL_RATE: ElementRef;
   @ViewChild('CREATE_DATE') CREATE_DATE: ElementRef;
   @ViewChild('NO') NO: ElementRef;
+  @ViewChild('CUSTOMER_CONTACT') CUSTOMER_CONTACT: ElementRef;
+  @ViewChild('CUSTOMER_CONTACT_PHONE') CUSTOMER_CONTACT_PHONE: ElementRef;
+  @ViewChild('CUSTOMER') CUSTOMER: ElementRef;
 
 
-  constructor(private masterService: MasterService, private quotationService: QuotationService, private authService: AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService) { }
+  last: string
+
+  horizontalPosition: MatSnackBarHorizontalPosition = 'end';
+  horizontalPosition2: MatSnackBarHorizontalPosition = 'start';
+  verticalPosition: MatSnackBarVerticalPosition = 'top';
+
+  constructor(private masterService: MasterService, private quotationService: QuotationService, private authService: AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService, private _snackBar: MatSnackBar, private _notiSnackbar: MatSnackBar , private _errorSneakBar: MatSnackBar) {
+    this.last = quotationService.last;
+  }
+  ngOnDestroy(): void {
+
+  }
 
   ngAfterViewInit(): void {
   }
+
+
 
   onLoadQuota() {
 
@@ -98,15 +119,46 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   }
 
+  openSnackBar(message: string, action: string) {
+    this._snackBar.open(message, action, {
+    });
+  }
+
+  openNotiSnackBar(message: string) {
+    this._notiSnackbar.open(message, "", {
+      duration: 3000,
+      panelClass: ['green-snackbar'],
+      horizontalPosition: this.horizontalPosition,
+      verticalPosition: this.verticalPosition,
+    });
+  }
+
+  openErrorSnackBar(data) {
+    this._errorSneakBar.openFromComponent(ErrorSnackComponent, {
+      duration: 5000,
+      verticalPosition: 'top',
+      horizontalPosition: this.horizontalPosition,
+      data: data,
+      panelClass: ['yellow-snackbar'],
+    });
+  }
+
+  clossSnackBar() {
+    this._snackBar.dismiss();
+  }
+
   onDownloadPdf() {
     this.loadingButton = true;
+    this.openSnackBar("กำลังดาวน์โหลด pdf", "กรุณารอซักครู่")
     this.quotationService.getQuotationForReport(this.id).subscribe(o => {
       if (o.status) {
-        this.pdfService.download(o.result).subscribe(k => {
+        this.pdfService.download(o.result, this.isBoss).subscribe(k => {
           this.loadingButton = false;
           var blob = new Blob([k], { type: 'application/pdf' });
           saveAs(blob, 'Quotation' + o.result.no + '.pdf');
-
+          //alert("ดาวน์โหลดใบเสนอราคาเรียบร้อย");
+          this.openNotiSnackBar("ดาวน์โหลดใบเสนอราคาเรียบร้อย");
+          //this.clossSnackBar();
         })
       }
 
@@ -118,12 +170,24 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   }
 
+
+  term = new FormControl();
+
+  isSelected(equip) {
+    return this.filterEquipments.includes(equip);
+  }
+
   setData() {
-    this.customerSelected = this.customerContact.filter(o => o.AUTO_ID === this.quotation.CONTACT_ID)[0].CUSTOMER_ID
-    this.onCustomerChange();
+    //this.customerSelected = this.customerContact.filter(o => o.AUTO_ID === this.quotation.CONTACT_ID)[0].CUSTOMER_ID
+    //this.onCustomerChange();
+    this.CUSTOMER.nativeElement.value = this.quotation.CUSTOMER
+    this.CUSTOMER_CONTACT.nativeElement.value = this.quotation.CUSTOMER_CONTACT
+    this.CUSTOMER_CONTACT_PHONE.nativeElement.value = this.quotation.CUSTOMER_CONTACT_PHONE
     this.customerContactSelected = this.quotation.CONTACT_ID
     this.officeSelected = this.quotation.SALE_OFFICE_ID
     this.id = this.quotation.AUTO_ID
+    this.isBoss = this.quotation.TYPE === 2 ? true : false
+    this.type = this.quotation.TYPE
     this.filterEquipments = [];
     this.quotation.EQUIPMENT_ID.forEach(element => {
       this.filterEquipments.push({ AUTO_ID: element })
@@ -142,7 +206,11 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
     this.GUARD_WOMAN_SHIFT_1.nativeElement.value = this.quotation.GUARD_WOMAN_SHIFT_1
     this.GUARD_WOMAN_SHIFT_2.nativeElement.value = this.quotation.GUARD_WOMAN_SHIFT_2
     this.BAIL_RATE.nativeElement.value = this.quotation.BAIL_RATE
-    this.NO.nativeElement.value = this.quotation.NO
+    if (this.quotation.NO) {
+      this.NO.nativeElement.value = this.quotation.NO
+    }
+
+
     if (this.quotation.CREATE_DATE) {
 
       if (this.quotation.CREATE_DATE.indexOf("Date(") > -1) {
@@ -173,32 +241,37 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
     if (!this.CREATE_DATE.nativeElement.value || this.CREATE_DATE.nativeElement.value === "") {
       this.errorList.push("ใส่วันที่")
     }
-    if (!this.customerSelected || this.customerSelected === "" || this.customerSelected === null) {
-      this.errorList.push("เลือกบริษัท/ชื่อลูกค้า")
+    if (!this.CUSTOMER || this.CUSTOMER.nativeElement.value === "" || this.CUSTOMER.nativeElement.value === null) {
+      this.errorList.push("ใส่บริษัท/ชื่อลูกค้า")
     }
-    if (!this.customerContactSelected || this.customerContactSelected === "" || this.customerContactSelected === null) {
-      this.errorList.push("เลือกชื่อผู้ติดต่อ")
+    if (!this.CUSTOMER_CONTACT || this.CUSTOMER_CONTACT.nativeElement.value === "" || this.CUSTOMER_CONTACT.nativeElement.value === null) {
+      this.errorList.push("ใส่ชื่อผู้ติดต่อ")
+    }
+    if (!this.CUSTOMER_CONTACT_PHONE || this.CUSTOMER_CONTACT_PHONE.nativeElement.value === "" || this.CUSTOMER_CONTACT_PHONE.nativeElement.value === null) {
+      this.errorList.push("ใส่เบอร์โทรผู้ติดต่อ")
     }
 
     let bali = this.BAIL_RATE.nativeElement.value;
-    if (bali === "" || bali === null || bali === 0) {
+    if (bali === "" || bali === null || bali === 0 || bali === "0") {
       this.errorList.push("ใส่วงเงินประกัน")
     }
 
+
+
     if (this.isBoss) {
-      if (this.BOSS_RATE.nativeElement.value === "" || this.BOSS_RATE.nativeElement.value === null || this.BOSS_RATE.nativeElement.value === 0) {
+      if (this.BOSS_RATE.nativeElement.value === "" || this.BOSS_RATE.nativeElement.value === null || this.BOSS_RATE.nativeElement.value === 0 || this.BOSS_RATE.nativeElement.value === "0") {
         this.errorList.push("ใส่ราคาหัวหน้า รปภ.")
       } else {
         let boss1 = this.BOSS_SHIFT_1.nativeElement.value;
         let boss2 = this.BOSS_SHIFT_2.nativeElement.value;
-        if ((boss1 === "" || boss1 === null || boss1 === 0) && (boss2 === "" || boss2 === null || boss2 === 0)) {
+        if ((boss1 === "" || boss1 === null || boss1 === 0 || boss1 === "0") && (boss2 === "" || boss2 === null || boss2 === 0 || boss2 === "0")) {
           this.errorList.push("ใส่จำนวนหัวหน้า รปภ.")
         }
       }
     } else {
       let manRate = this.GUARD_MAN_RATE.nativeElement.value
       let womanRate = this.GUARD_WOMAN_RATE.nativeElement.value
-      if ((manRate === "" || manRate === null || manRate === 0) && (womanRate === "" || womanRate === null || womanRate === 0)) {
+      if ((manRate === "" || manRate === null || manRate === 0 || manRate === "0") && (womanRate === "" || womanRate === null || womanRate === 0 || womanRate === "0")) {
         this.errorList.push("ใส่ราคา รปภ. ชายหรือหญิง")
       } else {
         let man1 = this.GUARD_MAN_SHIFT_1.nativeElement.value;
@@ -206,27 +279,27 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
         let woman1 = this.GUARD_WOMAN_SHIFT_1.nativeElement.value;
         let woman2 = this.GUARD_WOMAN_SHIFT_2.nativeElement.value;
 
-        if (manRate !== "" && manRate !== null && manRate !== 0) {
-          if ((man1 === "" || man1 === null || man1 === 0) && (man2 === "" || man2 === null || man2 === 0)) {
+        if (manRate !== "" && manRate !== null && manRate !== 0 && manRate !== "0") {
+          if ((man1 === "" || man1 === null || man1 === 0 || man1 === "0") && (man2 === "" || man2 === null || man2 === 0 || man2 === "0")) {
             this.errorList.push("ใส่จำนวน รปภ. ชาย")
           }
         }
 
-        if (womanRate !== "" && womanRate !== null && womanRate !== 0) {
-          if ((woman1 === "" || woman1 === null || woman1 === 0) && (woman2 === "" || woman2 === null || woman2 === 0)) {
+        if (womanRate !== "" && womanRate !== null && womanRate !== 0 && womanRate !== "0") {
+          if ((woman1 === "" || woman1 === null || woman1 === 0 || woman1 === "0") && (woman2 === "" || woman2 === null || woman2 === 0 || woman2 === "0")) {
             this.errorList.push("ใส่จำนวน รปภ. หญิง")
           }
         }
 
-        if ((man1 !== "" && man1 !== null && man1 !== 0) || (man2 !== "" && man2 !== null && man2 !== 0)) {
-          if (manRate === "" || manRate === null || manRate === 0) {
+        if ((man1 !== "" && man1 !== null && man1 !== 0 && man1 !== "0") || (man2 !== "" && man2 !== null && man2 !== 0 && man2 !== "0")) {
+          if (manRate === "" || manRate === null || manRate === 0 || manRate === "0") {
             this.errorList.push("ใส่ราคา รปภ. ชาย")
           }
         }
 
-        if ((woman1 !== "" && woman1 !== null && woman1 !== 0) || (woman2 !== "" && woman2 !== null && woman2 !== 0)) {
+        if ((woman1 !== "" && woman1 !== null && woman1 !== 0 && woman1 !== "0") || (woman2 !== "" && woman2 !== null && woman2 !== 0 && woman2 !== "0")) {
 
-          if (womanRate === "" || womanRate === null || womanRate === 0) {
+          if (womanRate === "" || womanRate === null || womanRate === 0 || womanRate === "0") {
             this.errorList.push("ใส่ราคา รปภ. หญิง")
           }
         }
@@ -240,8 +313,11 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
 
     if (this.errorList.length > 0) {
-      const element = document.querySelector('#scrollId');
-      element.scrollIntoView();
+      //const element = document.querySelector('#scrollId');
+      //element.scrollIntoView();
+      //let allError = this.errorList.join(",");
+      this.openErrorSnackBar(this.errorList)
+
       this.error = true;
       return false;
     }
@@ -253,17 +329,20 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   onSave(isCopy: boolean = false) {
     if (this.validate()) {
-      this.loading = true;
+
       if (confirm("ต้องการบันทึกข้อมูลใช่หรือไม่?")) {
+        //this.loading = true;
+        this.openSnackBar("กำลังบันทึกข้อมูล", "กรุณารอซักครู่")
+        this.disable = true;
         let quotation: quotationPaylod = {
           AUTO_ID: this.isEditMode ? this.id : 0,
           NO: "",
-          EQUIPMENT_ID: this.filterEquipments.map(o => o.AUTO_ID),
-          NOTE: this.notes,
+          EQUIPMENT_ID: this.filterEquipments.filter(o=>o.AUTO_ID !== 0).map(o => o.AUTO_ID),
+          NOTE: this.notes.filter(o=>o !== ""),
           TYPE: this.isEditMode ? this.type : this.isBoss ? 2 : 1,
           BOSS_RATE: this.BOSS_RATE ? +this.BOSS_RATE.nativeElement.value : 0,
-          BOSS_SHIFT_1: +this.BOSS_SHIFT_1 ? +this.BOSS_SHIFT_1.nativeElement.value : 0,
-          BOSS_SHIFT_2: +this.BOSS_SHIFT_2 ? +this.BOSS_SHIFT_2.nativeElement.value : 0,
+          BOSS_SHIFT_1: this.BOSS_SHIFT_1 ? +this.BOSS_SHIFT_1.nativeElement.value : 0,
+          BOSS_SHIFT_2: this.BOSS_SHIFT_2 ? +this.BOSS_SHIFT_2.nativeElement.value : 0,
           GUARD_MAN_RATE: +this.GUARD_MAN_RATE.nativeElement.value,
           GUARD_MAN_SHIFT_1: +this.GUARD_MAN_SHIFT_1.nativeElement.value,
           GUARD_MAN_SHIFT_2: +this.GUARD_MAN_SHIFT_2.nativeElement.value,
@@ -272,9 +351,12 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
           GUARD_WOMAN_SHIFT_2: +this.GUARD_WOMAN_SHIFT_2.nativeElement.value,
           BAIL_RATE: +this.BAIL_RATE.nativeElement.value,
           CREATE_DATE: this.CREATE_DATE.nativeElement.value,
-          CONTACT_ID: this.customerContactSelected,
+          CONTACT_ID: 1,
           SALE_OFFICE_ID: this.officeSelected,
           EMPLOYEE_ID: this.authService.user.id,
+          CUSTOMER: this.CUSTOMER.nativeElement.value,
+          CUSTOMER_CONTACT: this.CUSTOMER_CONTACT.nativeElement.value,
+          CUSTOMER_CONTACT_PHONE:this.CUSTOMER_CONTACT_PHONE.nativeElement.value,
         }
 
         let payload = JSON.stringify(quotation);
@@ -285,45 +367,68 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
               quotation.TYPE = this.isBoss ? 2 : 1,
               this.quotationService.saveQuotation(payload).subscribe(o => {
                 if (o.status) {
+                  this.openNotiSnackBar("บันทึกข้อมูลเรียบร้อย");
                   !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
-                  alert("บันทึกข้อมูลเรียบร้อย");
+
+
                 }
                 else {
                   alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
                 }
 
-                this.loading = false;
+                //this.clossSnackBar()
+                this.disable = false;
               }
               );
           }
           else {
             this.quotationService.editQuotation(payload).subscribe(o => {
               if (o.status) {
-                !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
-                alert("บันทึกข้อมูลเรียบร้อย");
+                this.openNotiSnackBar("บันทึกข้อมูลเรียบร้อย");
+                this.quotationService.getQuotation(+o.result).subscribe(data => {
+                  if (data.status) {
+                    this.quotation = data.result
+                    this.setData()
+
+                  }
+                  else {
+
+                  }
+                  this.loading = false;
+                })
+
               }
               else {
                 alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
               }
-              this.loading = false;
+              //this.clossSnackBar()
+              this.disable = false;
             });
           }
         }
         else {
           this.quotationService.saveQuotation(payload).subscribe(o => {
             if (o.status) {
+              this.openNotiSnackBar("บันทึกข้อมูลเรียบร้อย");
               !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
-              alert("บันทึกข้อมูลเรียบร้อย");
+
+
+
             }
             else {
               alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
             }
 
-            this.loading = false;
+            //this.clossSnackBar()
+            this.disable = false;
           }
           );
         }
 
+      }
+      else {
+        //this.clossSnackBar()
+        this.disable = false;
       }
     }
 
@@ -359,16 +464,17 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
 
   onGenerateNo() {
     if (confirm("ต้องการออกใบเสนอราคาหรือไม่? *จะไม่สามารถแก้ไขข้อมูลได้อีก")) {
-      this.loading = true;
+      this.disable = true;
+      this.openSnackBar("กำลังบันทึกข้อมูล", "กรุณารอซักครู่")
       this.quotationService.generateNo(this.id).subscribe(o => {
         if (o.status) {
           this.NO.nativeElement.value = o.result
           this.id = +o.message
           this.disable = true
-          alert("บันทึกข้อมูลเรียบร้อย");
+          this.openNotiSnackBar("ออกใบเสนอราคาเรียบร้อย")
           this.onDownloadPdf()
         }
-        this.loading = false;
+        //this.disable = false;
       })
     }
   }
@@ -407,7 +513,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
       }
 
       if (results[2].status) {
-        this.customerContact = results[2].result;
+        this.customerContact = results[2].result.map(o => o.NAME).filter((v, i, a) => a.indexOf(v) === i);
       }
       else {
       }
@@ -421,7 +527,33 @@ export class GuardContentComponent implements OnInit, AfterViewInit {
       this.loading = false;
     }, err => { }, () => {
       this.onLoadQuota()
+      this.filteredOptions = this.myControl.valueChanges.pipe(
+        startWith(''),
+        map(value => this._filter(value))
+      );
+
+      this.filteredOptions2 = this.myControl2.valueChanges.pipe(
+        startWith(''),
+        map(o => this._filter2(o))
+      );
     });
+  }
+
+  myControl = new FormControl();
+  filteredOptions: Observable<string[]>;
+  private _filter(value: string): string[] {
+    const filterValue = value.toLowerCase();
+
+    return this.customers.filter(option => option.NAME.toLowerCase().indexOf(filterValue) === 0);
+  }
+
+  myControl2 = new FormControl();
+  filteredOptions2: Observable<string[]>;
+  private _filter2(value: string): string[] {
+    const filterValue = value.toLowerCase();
+
+    var x = this.customerContact.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+    return x
   }
 
 }

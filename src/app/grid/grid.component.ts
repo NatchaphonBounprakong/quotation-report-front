@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { QuotationService } from '../quotation.service';
 import { Subject, forkJoin, Observable } from 'rxjs';
@@ -13,7 +13,8 @@ interface filter {
   customer_contact: string,
   create_date_to: string,
   create_date_from: string,
-  create_by: string
+  create_by: string,
+  office: string
 }
 @Component({
   selector: 'app-grid',
@@ -21,19 +22,19 @@ interface filter {
   styleUrls: ['./grid.component.less']
 })
 
-export class GridComponent implements OnInit, AfterViewInit {
+export class GridComponent implements OnInit, AfterViewInit,OnDestroy {
   dtOptions: DataTables.Settings = {};
   dtTrigger: Subject<any> = new Subject();
   quotaions = []
+  saleOffice = []
 
   @ViewChild(MatAccordion) accordion: MatAccordion;
   @ViewChild(DataTableDirective, { static: false })
+
   dtElement: DataTableDirective;
   date = new Date();
   startDate = new FormControl(new Date(this.date.getFullYear(), this.date.getMonth(), 1))
   endDate = new FormControl(new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0))
-  constructor(private router: Router, private service: QuotationService, private masterService: MasterService) { }
-
   panelOpenState = false;
 
   @ViewChild('NO') NO: ElementRef;
@@ -41,7 +42,6 @@ export class GridComponent implements OnInit, AfterViewInit {
   @ViewChild('CUSTOMER_CONTACT') CUSTOMER_CONTACT: ElementRef;
   @ViewChild('START_DATE') START_DATE: ElementRef;
   @ViewChild('END_DATE') END_DATE: ElementRef;
-  @ViewChild('EMPLOYEE_NAME') EMPLOYEE_NAME: ElementRef;
   loading = false
 
   filterCustomerContact: any[] = []
@@ -49,11 +49,18 @@ export class GridComponent implements OnInit, AfterViewInit {
   customerSelected = null;
   customerContactSelected = null;
   customers: any[] = []
+  officeSelected = null;
+
+  constructor(private router: Router, private service: QuotationService, private masterService: MasterService) { }
 
   onCustomerChange() {
     this.filterCustomerContact = this.customerContact.filter(o => o.CUSTOMER_ID === this.customerSelected);
   }
 
+  ngOnDestroy(): void {
+    // Do not forget to unsubscribe the event
+    this.dtTrigger.unsubscribe();
+  }
   ngAfterViewInit(): void {
     this.dtOptions = {
       order: [],
@@ -73,7 +80,8 @@ export class GridComponent implements OnInit, AfterViewInit {
       create_by: '',
       customer: '',
       customer_contact: '',
-      no: ''
+      no: '',
+      office: ''
     }
 
     let payload = JSON.stringify(filter)
@@ -83,6 +91,7 @@ export class GridComponent implements OnInit, AfterViewInit {
         this.quotaions = o.result;
         this.dtTrigger.next();
         this.loading = false;
+        this.service.last = o.result[0].LAST
       } else {
         this.loading = false;
       }
@@ -99,14 +108,25 @@ export class GridComponent implements OnInit, AfterViewInit {
     this.router.navigate(['/guard/' + id]);
   }
 
+  onReset() {
+    this.CUSTOMER.nativeElement.value = ''
+    this.CUSTOMER_CONTACT.nativeElement.value = ''
+    this.NO.nativeElement.value = ''
+    this.officeSelected = "เลือกทั้งหมด"
+    this.startDate = new FormControl(new Date(this.date.getFullYear(), this.date.getMonth(), 1))
+    this.endDate = new FormControl(new Date(this.date.getFullYear(), this.date.getMonth() + 1, 0))
+    this.onSearch()
+  }
+
   onSearch() {
     let filter: filter = {
       create_date_to: this.END_DATE.nativeElement.value,
       create_date_from: this.START_DATE.nativeElement.value,
-      create_by: this.EMPLOYEE_NAME === null ? '' : this.EMPLOYEE_NAME.nativeElement.value,
+      create_by: '',
       customer: this.CUSTOMER.nativeElement.value,
       customer_contact: this.CUSTOMER_CONTACT.nativeElement.value,
       no: this.NO.nativeElement.value,
+      office: this.officeSelected === "เลือกทั้งหมด" ? '' : this.officeSelected
     }
     this.loading = true;
     let payload = JSON.stringify(filter)
@@ -131,8 +151,7 @@ export class GridComponent implements OnInit, AfterViewInit {
   filteredOptions: Observable<string[]>;
 
 
-  myControl2 = new FormControl();
-  filteredOptions2: Observable<string[]>;
+
 
   private _filter(value: string): string[] {
     const filterValue = value.toLowerCase();
@@ -140,10 +159,12 @@ export class GridComponent implements OnInit, AfterViewInit {
     return this.customers.filter(option => option.NAME.toLowerCase().indexOf(filterValue) === 0);
   }
 
+  myControl2 = new FormControl();
+  filteredOptions2: Observable<string[]>;
   private _filter2(value: string): string[] {
     const filterValue = value.toLowerCase();
 
-    var x =this.customerContact.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
+    var x = this.customerContact.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
     return x
   }
 
@@ -151,7 +172,7 @@ export class GridComponent implements OnInit, AfterViewInit {
   onFetchMasterData() {
 
     this.loading = true;
-    forkJoin([this.masterService.fetchCustomers(), this.masterService.fetchCustomerContact()]).subscribe(results => {
+    forkJoin([this.masterService.fetchCustomers(), this.masterService.fetchCustomerContact(), this.masterService.fetchSaleOffice()]).subscribe(results => {
 
       if (results[0].status) {
         this.customers = results[0].result.filter(o => o.CUSTOMER_CONTACT.length > 0);
@@ -161,7 +182,15 @@ export class GridComponent implements OnInit, AfterViewInit {
       }
 
       if (results[1].status) {
-        this.customerContact = results[1].result.map(o=>o.NAME).filter((v, i, a) => a.indexOf(v) === i) ;
+        this.customerContact = results[1].result.map(o => o.NAME).filter((v, i, a) => a.indexOf(v) === i);
+      }
+      else {
+      }
+
+      if (results[2].status) {
+        this.saleOffice = results[2].result;
+        this.saleOffice.splice(0, 0, { NAME: 'เลือกทั้งหมด' });
+        this.officeSelected = "เลือกทั้งหมด"
       }
       else {
       }

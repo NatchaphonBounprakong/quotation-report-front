@@ -8,6 +8,8 @@ export class QuotationService {
 
   private url: string = URLS.api
 
+  last:string
+
   constructor(private http: HttpClient) {
 	}
 

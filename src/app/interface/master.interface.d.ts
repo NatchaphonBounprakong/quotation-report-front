@@ -24,4 +24,7 @@ export interface quotationPaylod {
   EMPLOYEE_ID?: any;
   EQUIPMENT_ID: number[];
   NOTE: string[];
+  CUSTOMER:string;
+  CUSTOMER_CONTACT:string
+  CUSTOMER_CONTACT_PHONE:string
 }

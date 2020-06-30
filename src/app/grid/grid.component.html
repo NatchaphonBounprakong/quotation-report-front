@@ -1,13 +1,13 @@
 <div class="container-fluid" style="margin-top: 15px;">
 
-  <mat-accordion>
-    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false">
+  <mat-accordion >
+    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" style="width: 100%;background-color: #ffefed; ">
       <mat-expansion-panel-header>
         <mat-panel-title>
-          ตัวกรอง
+        ค้นหา
         </mat-panel-title>
         <mat-panel-description>
-          กดที่นี่เพื่อ{{panelOpenState ? 'ปิด' : 'เปิด'}}ตัวกรอง
+          กดที่นี่เพื่อ{{panelOpenState ? 'ปิด' : 'เปิด'}}ค้นหา
         </mat-panel-description>
       </mat-expansion-panel-header>
       <div class="row">
@@ -19,7 +19,7 @@
         </div>
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
-            <mat-label>บริษัท / ชื่อลูกค้า</mat-label>
+            <mat-label>บริษัท(ลูกค้า)</mat-label>
             <input type="text" matInput [matAutocomplete]="auto" [formControl]="myControl" #CUSTOMER >
             <mat-autocomplete autoActiveFirstOption  #auto="matAutocomplete">
               <mat-option *ngFor="let customer of filteredOptions | async" [value]="customer.NAME">
@@ -31,13 +31,23 @@
 
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
-            <mat-label>ชื่อผู้ติดต่อ</mat-label>
+            <mat-label>ชื่อผู้ติดต่อ (ลูกค้า)</mat-label>
             <input type="text" matInput [matAutocomplete]="autoCustomer" [formControl]="myControl2" #CUSTOMER_CONTACT>
             <mat-autocomplete autoActiveFirstOption  #autoCustomer="matAutocomplete">
               <mat-option *ngFor="let customerContact of filteredOptions2 | async" [value]="customerContact">
                 {{customerContact}}
               </mat-option>
             </mat-autocomplete>
+          </mat-form-field>
+        </div>
+        <div class="col-md-4 col-xs-6">
+          <mat-form-field class="example-full-width">
+            <mat-label>สาขาที่ออกใบเสนอราคา</mat-label>
+            <mat-select [(value)]="officeSelected" >
+              <mat-option *ngFor="let office of saleOffice" [value]="office.NAME">
+                {{office.NAME}}
+              </mat-option>
+            </mat-select>
           </mat-form-field>
         </div>
         <div class="col-md-4 col-xs-6">
@@ -56,12 +66,7 @@
             <mat-datepicker #picker2></mat-datepicker>
           </mat-form-field>
         </div>
-        <div class="col-md-4 col-xs-6" [hidden]="true">
-          <mat-form-field class="example-full-width">
-            <mat-label>สร้างโดย</mat-label>
-            <input matInput value="" #EMPLOYEE_NAME>
-          </mat-form-field>
-        </div>
+
 
 
 
@@ -72,6 +77,9 @@
 
       </div>
       <button mat-raised-button color="primary" (click)="onSearch()">ค้นหา</button>
+      <button mat-raised-button style="margin-left: 15px;" (click)="onReset()">ล้างการค้นหา</button>
+
+
     </mat-expansion-panel>
   </mat-accordion>
 
@@ -85,20 +93,22 @@
             <tr>
               <th>จัดการ
               </th>
+              <th>Sale Office
+              </th>
+              <th>ฝ่ายขาย (sale)
+              </th>
               <th>เลขใบเสนอราคา
               </th>
-              <th>ลูกค้า
+              <th>บริษัท (ลูกค้า)
               </th>
-              <th>ผู้ติดต่อ
+              <th>ชื่อผู้ติดต่อ (ลูกค้า)
               </th>
               <th>วันที่ออกใบเสนอราคา
               </th>
-              <th>ออกใบเสนอราคาโดย (sale)
-              </th>
+
               <th>ราคาสุทธิ
               </th>
-              <th>Sale Office
-              </th>
+
             </tr>
           </thead>
           <tbody>
@@ -107,13 +117,15 @@
                   style="width: 100%;"
                   (click)=onNavigateGuard(quota.AUTO_ID)>{{quota.NO === "ยังไม่ได้ออกใบเสนอราคา" ? 'แก้ไข' : 'ดู'}}</button>
               </td>
+              <td>{{quota.SALE_OFFICE}}</td>
+              <td>{{quota.EMPLOYEE_NAME}}</td>
               <td>{{quota.NO}}</td>
               <td>{{quota.CUSTOMER}}</td>
               <td>{{quota.CUSTOMER_CONTACT}}</td>
               <td>{{quota.CREATE_DATE}}</td>
-              <td>{{quota.EMPLOYEE_NAME}}</td>
+
               <td>{{quota.TOTAL}}</td>
-              <td>{{quota.SALE_OFFICE}}</td>
+
             </tr>
           </tbody>
         </table>

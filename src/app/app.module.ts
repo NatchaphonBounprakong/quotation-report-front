@@ -35,6 +35,11 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatCheckboxModule} from '@angular/material/checkbox';
 import {MatRadioModule} from '@angular/material/radio';
 import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+import { ErrorSnackComponent } from './error-snack/error-snack.component';
+import { EquipmentComponent } from './equipment/equipment.component';
+import { EquipmentDialogComponent } from './equipment/equipment-dialog/equipment-dialog.component';
+
 
 @NgModule({
   declarations: [
@@ -43,6 +48,9 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
     GuardContentComponent,
     GridComponent,
     AuthComponent,
+    ErrorSnackComponent,
+    EquipmentComponent,
+    EquipmentDialogComponent,
 
   ],
   imports: [
@@ -76,7 +84,8 @@ import {MatAutocompleteModule} from '@angular/material/autocomplete';
     MatProgressSpinnerModule,
     MatCheckboxModule,
     MatRadioModule,
-    MatAutocompleteModule
+    MatAutocompleteModule,
+    MatSnackBarModule
   ],
   providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [AppComponent],
