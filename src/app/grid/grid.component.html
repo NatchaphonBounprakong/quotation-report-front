@@ -1,10 +1,11 @@
 <div class="container-fluid" style="margin-top: 15px;">
 
-  <mat-accordion >
-    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false" style="width: 100%;background-color: #ffefed; ">
+  <mat-accordion>
+    <mat-expansion-panel (opened)="panelOpenState = true" (closed)="panelOpenState = false"
+      style="width: 100%;background-color: #ffefed; ">
       <mat-expansion-panel-header>
         <mat-panel-title>
-        ค้นหา
+          ค้นหา
         </mat-panel-title>
         <mat-panel-description>
           กดที่นี่เพื่อ{{panelOpenState ? 'ปิด' : 'เปิด'}}ค้นหา
@@ -20,30 +21,22 @@
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
             <mat-label>บริษัท(ลูกค้า)</mat-label>
-            <input type="text" matInput [matAutocomplete]="auto" [formControl]="myControl" #CUSTOMER >
-            <mat-autocomplete autoActiveFirstOption  #auto="matAutocomplete">
-              <mat-option *ngFor="let customer of filteredOptions | async" [value]="customer.NAME">
-                {{customer.NAME}}
-              </mat-option>
-            </mat-autocomplete>
+            <input type="text" matInput #CUSTOMER>
+
           </mat-form-field>
         </div>
 
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
             <mat-label>ชื่อผู้ติดต่อ (ลูกค้า)</mat-label>
-            <input type="text" matInput [matAutocomplete]="autoCustomer" [formControl]="myControl2" #CUSTOMER_CONTACT>
-            <mat-autocomplete autoActiveFirstOption  #autoCustomer="matAutocomplete">
-              <mat-option *ngFor="let customerContact of filteredOptions2 | async" [value]="customerContact">
-                {{customerContact}}
-              </mat-option>
-            </mat-autocomplete>
+            <input type="text" matInput #CUSTOMER_CONTACT>
+
           </mat-form-field>
         </div>
         <div class="col-md-4 col-xs-6">
           <mat-form-field class="example-full-width">
             <mat-label>สาขาที่ออกใบเสนอราคา</mat-label>
-            <mat-select [(value)]="officeSelected" >
+            <mat-select [(value)]="officeSelected">
               <mat-option *ngFor="let office of saleOffice" [value]="office.NAME">
                 {{office.NAME}}
               </mat-option>

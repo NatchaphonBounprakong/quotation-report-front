@@ -53,8 +53,8 @@
 
                 <div class="col-md-6 col-xs-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>บริษัท / ชื่อลูกค้า</mat-label>
-                    <input type="text" matInput [formControl]="myControl" #CUSTOMER>
+                    <mat-label>บริษัท / ชื่อลูกค้า<i style="color: #D34346;">*</i></mat-label>
+                    <input type="text" matInput  #CUSTOMER [disabled]="disable">
                     <!-- <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
                       <mat-option *ngFor="let customer of filteredOptions | async" [value]="customer.NAME">
                         {{customer.NAME}}
@@ -66,8 +66,8 @@
 
                 <div class="col-md-6 col-xs-6">
                   <mat-form-field class="example-full-width">
-                    <mat-label>ชื่อผู้ติดต่อ</mat-label>
-                    <input type="text" matInput [formControl]="myControl2" #CUSTOMER_CONTACT>
+                    <mat-label>ชื่อผู้ติดต่อ<i style="color: #D34346;">*</i></mat-label>
+                    <input type="text" matInput #CUSTOMER_CONTACT [disabled]="disable">
                     <!-- <mat-autocomplete autoActiveFirstOption #autoCustomer="matAutocomplete">
                       <mat-option *ngFor="let customerContact of filteredOptions2 | async" [value]="customerContact">
                         {{customerContact }}
@@ -79,7 +79,7 @@
                 <div class="col-md-6">
                   <mat-form-field class="example-full-width">
                     <mat-label>เบอร์โทรลูกค้า<i style="color: #D34346;">*</i></mat-label>
-                    <input matInput value="" type="number" #CUSTOMER_CONTACT_PHONE [disabled]="disable">
+                    <input matInput value="" type="tel" #CUSTOMER_CONTACT_PHONE [disabled]="disable" maxlength="10">
                     <mat-hint align="end"></mat-hint>
                   </mat-form-field>
                 </div>
@@ -237,7 +237,7 @@
           </mat-card>
 
           <mat-card class="m-3" style="width: 100%;background-color: #ffefed; ">
-            <mat-card-subtitle>
+            <mat-card-subtitle style="color: #D34346;">
               หมายเหตุ
               <button mat-mini-fab color="warn" type="button" (click)=onAddNote() style="float: right;"
                 *ngIf="!disable">

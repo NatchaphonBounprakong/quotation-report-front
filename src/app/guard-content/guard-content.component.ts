@@ -25,7 +25,7 @@ interface Food {
   templateUrl: './guard-content.component.html',
   styleUrls: ['./guard-content.component.less']
 })
-export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
+export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
 
   equipments: any[] = []
   customers: any[] = []
@@ -68,21 +68,27 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
   @ViewChild('CUSTOMER_CONTACT_PHONE') CUSTOMER_CONTACT_PHONE: ElementRef;
   @ViewChild('CUSTOMER') CUSTOMER: ElementRef;
 
-
+  term = new FormControl();
   last: string
 
   horizontalPosition: MatSnackBarHorizontalPosition = 'end';
   horizontalPosition2: MatSnackBarHorizontalPosition = 'start';
   verticalPosition: MatSnackBarVerticalPosition = 'top';
 
-  constructor(private masterService: MasterService, private quotationService: QuotationService, private authService: AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService, private _snackBar: MatSnackBar, private _notiSnackbar: MatSnackBar , private _errorSneakBar: MatSnackBar) {
+  constructor(private masterService: MasterService, private quotationService: QuotationService, private authService: AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService, private _snackBar: MatSnackBar, private _notiSnackbar: MatSnackBar, private _errorSneakBar: MatSnackBar) {
     this.last = quotationService.last;
   }
-  ngOnDestroy(): void {
+
+  ngOnInit(): void {
+    this.onFetchMasterData();
 
   }
 
   ngAfterViewInit(): void {
+  }
+
+  ngOnDestroy(): void {
+
   }
 
 
@@ -165,13 +171,9 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
     })
   }
 
-  ngOnInit(): void {
-    this.onFetchMasterData();
-
-  }
 
 
-  term = new FormControl();
+
 
   isSelected(equip) {
     return this.filterEquipments.includes(equip);
@@ -267,6 +269,39 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
         if ((boss1 === "" || boss1 === null || boss1 === 0 || boss1 === "0") && (boss2 === "" || boss2 === null || boss2 === 0 || boss2 === "0")) {
           this.errorList.push("ใส่จำนวนหัวหน้า รปภ.")
         }
+        let manRate = this.GUARD_MAN_RATE.nativeElement.value
+        let womanRate = this.GUARD_WOMAN_RATE.nativeElement.value
+        let man1 = this.GUARD_MAN_SHIFT_1.nativeElement.value;
+        let man2 = this.GUARD_MAN_SHIFT_2.nativeElement.value;
+        let woman1 = this.GUARD_WOMAN_SHIFT_1.nativeElement.value;
+        let woman2 = this.GUARD_WOMAN_SHIFT_2.nativeElement.value;
+
+        if (manRate !== "" && manRate !== null && manRate !== 0 && manRate !== "0") {
+          if ((man1 === "" || man1 === null || man1 === 0 || man1 === "0") && (man2 === "" || man2 === null || man2 === 0 || man2 === "0")) {
+            this.errorList.push("ใส่จำนวน รปภ. ชาย")
+          }
+        }
+
+        if (womanRate !== "" && womanRate !== null && womanRate !== 0 && womanRate !== "0") {
+          if ((woman1 === "" || woman1 === null || woman1 === 0 || woman1 === "0") && (woman2 === "" || woman2 === null || woman2 === 0 || woman2 === "0")) {
+            this.errorList.push("ใส่จำนวน รปภ. หญิง")
+          }
+        }
+
+        if ((man1 !== "" && man1 !== null && man1 !== 0 && man1 !== "0") || (man2 !== "" && man2 !== null && man2 !== 0 && man2 !== "0")) {
+          if (manRate === "" || manRate === null || manRate === 0 || manRate === "0") {
+            this.errorList.push("ใส่ราคา รปภ. ชาย")
+          }
+        }
+
+        if ((woman1 !== "" && woman1 !== null && woman1 !== 0 && woman1 !== "0") || (woman2 !== "" && woman2 !== null && woman2 !== 0 && woman2 !== "0")) {
+
+          if (womanRate === "" || womanRate === null || womanRate === 0 || womanRate === "0") {
+            this.errorList.push("ใส่ราคา รปภ. หญิง")
+          }
+        }
+
+
       }
     } else {
       let manRate = this.GUARD_MAN_RATE.nativeElement.value
@@ -337,8 +372,8 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
         let quotation: quotationPaylod = {
           AUTO_ID: this.isEditMode ? this.id : 0,
           NO: "",
-          EQUIPMENT_ID: this.filterEquipments.filter(o=>o.AUTO_ID !== 0).map(o => o.AUTO_ID),
-          NOTE: this.notes.filter(o=>o !== ""),
+          EQUIPMENT_ID: this.filterEquipments.filter(o => o.AUTO_ID !== 0).map(o => o.AUTO_ID),
+          NOTE: this.notes.filter(o => o !== ""),
           TYPE: this.isEditMode ? this.type : this.isBoss ? 2 : 1,
           BOSS_RATE: this.BOSS_RATE ? +this.BOSS_RATE.nativeElement.value : 0,
           BOSS_SHIFT_1: this.BOSS_SHIFT_1 ? +this.BOSS_SHIFT_1.nativeElement.value : 0,
@@ -356,7 +391,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
           EMPLOYEE_ID: this.authService.user.id,
           CUSTOMER: this.CUSTOMER.nativeElement.value,
           CUSTOMER_CONTACT: this.CUSTOMER_CONTACT.nativeElement.value,
-          CUSTOMER_CONTACT_PHONE:this.CUSTOMER_CONTACT_PHONE.nativeElement.value,
+          CUSTOMER_CONTACT_PHONE: this.CUSTOMER_CONTACT_PHONE.nativeElement.value,
         }
 
         let payload = JSON.stringify(quotation);
@@ -369,7 +404,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
                 if (o.status) {
                   this.openNotiSnackBar("บันทึกข้อมูลเรียบร้อย");
                   !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
-
+                  this.NO.nativeElement.value = this.last
 
                 }
                 else {
@@ -411,9 +446,6 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
             if (o.status) {
               this.openNotiSnackBar("บันทึกข้อมูลเรียบร้อย");
               !this.isBoss ? this.router.navigate(["guard", o.result]) : this.router.navigate(["guard-boss", o.result]);
-
-
-
             }
             else {
               alert("ไม่สามารถบันทึกข้อมูลได้กรุณาลองใหม่ ภายหลัง Message:" + o.message);
@@ -486,13 +518,10 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
   trackByFn(i: number) {
     return i;
   }
-
-
-
   onFetchMasterData() {
 
     this.loading = true;
-    forkJoin([this.masterService.fetchEquipment(), this.masterService.fetchCustomers(), this.masterService.fetchCustomerContact(), this.masterService.fetchSaleOffice()]).subscribe(results => {
+    forkJoin([this.masterService.fetchEquipment(), this.masterService.fetchSaleOffice()]).subscribe(results => {
       if (results[0].status) {
         this.equipments = results[0].result;
         if (!this.isEditMode) {
@@ -506,20 +535,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
 
 
       if (results[1].status) {
-        this.customers = results[1].result.filter(o => o.CUSTOMER_CONTACT.length > 0);
-      }
-      else {
-
-      }
-
-      if (results[2].status) {
-        this.customerContact = results[2].result.map(o => o.NAME).filter((v, i, a) => a.indexOf(v) === i);
-      }
-      else {
-      }
-
-      if (results[3].status) {
-        this.saleOffice = results[3].result;
+        this.saleOffice = results[1].result;
       }
       else {
       }
@@ -527,33 +543,8 @@ export class GuardContentComponent implements OnInit, AfterViewInit,OnDestroy {
       this.loading = false;
     }, err => { }, () => {
       this.onLoadQuota()
-      this.filteredOptions = this.myControl.valueChanges.pipe(
-        startWith(''),
-        map(value => this._filter(value))
-      );
-
-      this.filteredOptions2 = this.myControl2.valueChanges.pipe(
-        startWith(''),
-        map(o => this._filter2(o))
-      );
     });
   }
 
-  myControl = new FormControl();
-  filteredOptions: Observable<string[]>;
-  private _filter(value: string): string[] {
-    const filterValue = value.toLowerCase();
-
-    return this.customers.filter(option => option.NAME.toLowerCase().indexOf(filterValue) === 0);
-  }
-
-  myControl2 = new FormControl();
-  filteredOptions2: Observable<string[]>;
-  private _filter2(value: string): string[] {
-    const filterValue = value.toLowerCase();
-
-    var x = this.customerContact.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
-    return x
-  }
 
 }

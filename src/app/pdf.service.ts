@@ -14,10 +14,26 @@ export class PdfService {
   }
 
   header: HttpHeaders = new HttpHeaders({ 'Content-Type': 'application/json' })
-  download(data: any,boss:boolean) {
+  download(data: any, boss: boolean) {
+    let name = ""
+    if (boss) {
+      name = "/Quota/Invoice"
+    } else {
+      let man = data.guard_man_amount1 + data.guard_man_amount2;
+      let woman = data.guard_woman_amount1 + data.guard_woman_amount2;
+      if (man > 0 && woman > 0){
+        name ="/Quota-Guard/Invoice"
+      } else if (man > 0 && woman === 0){
+        name ="/Quota-Guard-Man/Invoice"
+      }
+      else if (woman > 0 && man === 0){
+        name ="/Quota-Guard-Woman/Invoice"
+      }
+    }
+
     return this.http.post(URLS.report, {
       "template": {
-        "name": boss ? "/Quota/Invoice" : "/Quota-Guard/Invoice"
+        "name": name
       },
       "data": data
     }, { headers: this.header, responseType: 'blob' })

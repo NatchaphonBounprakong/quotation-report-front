@@ -80,8 +80,9 @@ export class EquipmentComponent implements OnInit, OnDestroy, AfterViewInit {
     dialogRef.afterClosed().subscribe(result => {
       console.log(result);
       //this.loading = true;
-      this.openSnackBar("กำลังบันทึกข้อมูล","กรุณารอซักครู่")
+
       if (result !== null && result !== undefined) {
+        this.openSnackBar("กำลังบันทึกข้อมูล","กรุณารอซักครู่")
         this.masterService.manageEquipment(JSON.stringify(result)).subscribe(o => {
           if (o.status) {
             this.onReload()
@@ -99,9 +100,9 @@ export class EquipmentComponent implements OnInit, OnDestroy, AfterViewInit {
   onDelete(id) {
     if (confirm("ต้องการลบอุปกรณ์ใช่หรือไม่")) {
       //this.loading = true;
-      this.openSnackBar("กำลังบันทึกข้อมูล","กรุณารอซักครู่")
-      this.masterService.deleteEquipment(id).subscribe(o => {
 
+      this.masterService.deleteEquipment(id).subscribe(o => {
+        this.openSnackBar("กำลังบันทึกข้อมูล","กรุณารอซักครู่")
         if (o.status) {
 
           this.onReload()

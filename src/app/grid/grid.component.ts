@@ -67,6 +67,7 @@ export class GridComponent implements OnInit, AfterViewInit,OnDestroy {
       pagingType: 'full_numbers',
       responsive: true,
       scrollX: true,
+
       language: {
         search: "ค้นหาด่วน"
       },
@@ -91,7 +92,7 @@ export class GridComponent implements OnInit, AfterViewInit,OnDestroy {
         this.quotaions = o.result;
         this.dtTrigger.next();
         this.loading = false;
-        this.service.last = o.result[0].LAST
+        this.service.last = o.message
       } else {
         this.loading = false;
       }
@@ -151,59 +152,22 @@ export class GridComponent implements OnInit, AfterViewInit,OnDestroy {
   filteredOptions: Observable<string[]>;
 
 
-
-
-  private _filter(value: string): string[] {
-    const filterValue = value.toLowerCase();
-
-    return this.customers.filter(option => option.NAME.toLowerCase().indexOf(filterValue) === 0);
-  }
-
-  myControl2 = new FormControl();
-  filteredOptions2: Observable<string[]>;
-  private _filter2(value: string): string[] {
-    const filterValue = value.toLowerCase();
-
-    var x = this.customerContact.filter(option => option.toLowerCase().indexOf(filterValue) === 0);
-    return x
-  }
-
-
   onFetchMasterData() {
 
     this.loading = true;
-    forkJoin([this.masterService.fetchCustomers(), this.masterService.fetchCustomerContact(), this.masterService.fetchSaleOffice()]).subscribe(results => {
+    forkJoin([this.masterService.fetchSaleOffice()]).subscribe(results => {
+
+
 
       if (results[0].status) {
-        this.customers = results[0].result.filter(o => o.CUSTOMER_CONTACT.length > 0);
-      }
-      else {
-
-      }
-
-      if (results[1].status) {
-        this.customerContact = results[1].result.map(o => o.NAME).filter((v, i, a) => a.indexOf(v) === i);
-      }
-      else {
-      }
-
-      if (results[2].status) {
-        this.saleOffice = results[2].result;
+        this.saleOffice = results[0].result;
         this.saleOffice.splice(0, 0, { NAME: 'เลือกทั้งหมด' });
         this.officeSelected = "เลือกทั้งหมด"
       }
       else {
       }
 
-      this.filteredOptions = this.myControl.valueChanges.pipe(
-        startWith(''),
-        map(value => this._filter(value))
-      );
 
-      this.filteredOptions2 = this.myControl2.valueChanges.pipe(
-        startWith(''),
-        map(o => this._filter2(o))
-      );
 
       this.loading = false;
     })
