@@ -13,6 +13,7 @@ import { Router } from '@angular/router';
 export class MainNavComponent implements OnInit {
 
 
+
   private loginSub: Subscription;
   isAuthenticated = false;
   isHandset$: Observable<boolean> = this.breakpointObserver.observe(Breakpoints.Handset)
@@ -39,8 +40,11 @@ export class MainNavComponent implements OnInit {
   }
 
   onLogout() {
-    this.service.logout();
-    this.router.navigate(['/auth']);
+    if(confirm("ต้องการออกจากระบบ?")){
+      this.service.logout();
+      this.router.navigate(['/auth']);
+    }
+
   }
 
 }

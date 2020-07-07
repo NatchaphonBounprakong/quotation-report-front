@@ -30,6 +30,16 @@ import {MatPaginatorModule} from '@angular/material/paginator';
 import { DataTablesModule } from 'angular-datatables';
 import {MatExpansionModule} from '@angular/material/expansion';
 import { AuthComponent } from './auth/auth.component';
+import { LocationStrategy, HashLocationStrategy } from '@angular/common';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatCheckboxModule} from '@angular/material/checkbox';
+import {MatRadioModule} from '@angular/material/radio';
+import {MatAutocompleteModule} from '@angular/material/autocomplete';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
+import { ErrorSnackComponent } from './error-snack/error-snack.component';
+import { EquipmentComponent } from './equipment/equipment.component';
+import { EquipmentDialogComponent } from './equipment/equipment-dialog/equipment-dialog.component';
+
 
 @NgModule({
   declarations: [
@@ -38,6 +48,9 @@ import { AuthComponent } from './auth/auth.component';
     GuardContentComponent,
     GridComponent,
     AuthComponent,
+    ErrorSnackComponent,
+    EquipmentComponent,
+    EquipmentDialogComponent,
 
   ],
   imports: [
@@ -66,9 +79,15 @@ import { AuthComponent } from './auth/auth.component';
     MatTableModule,
     MatPaginatorModule,
     DataTablesModule,
-    MatExpansionModule
+    MatExpansionModule,
+    MatExpansionModule,
+    MatProgressSpinnerModule,
+    MatCheckboxModule,
+    MatRadioModule,
+    MatAutocompleteModule,
+    MatSnackBarModule
   ],
-  providers: [],
+  providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [AppComponent],
 })
 export class AppModule { }

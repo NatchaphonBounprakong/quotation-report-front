@@ -30,5 +30,11 @@ export class MasterService {
 		return this.http.get<any>(this.url + "master/getsaleoffice")
 	}
 
+  manageEquipment(payload:string) {
+		return this.http.post<any>(this.url + "master/ManageEquipment",{payload:payload})
+  }
 
+  deleteEquipment(id:number) {
+		return this.http.post<any>(this.url + "master/DeleteEquipment",{id:id})
+  }
 }

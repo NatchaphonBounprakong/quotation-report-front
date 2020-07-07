@@ -5,6 +5,7 @@ import { GridComponent } from './grid/grid.component';
 import { AuthGuard } from './auth.guard';
 import { AuthComponent } from './auth/auth.component';
 import { LoginGuard } from './login.guard';
+import { EquipmentComponent } from './equipment/equipment.component';
 
 
 const routes: Routes = [
@@ -16,6 +17,11 @@ const routes: Routes = [
   {
     path: 'list',
     component: GridComponent,
+    canActivate: [AuthGuard],
+  },
+  {
+    path: 'equipment',
+    component: EquipmentComponent,
     canActivate: [AuthGuard],
   },
   {

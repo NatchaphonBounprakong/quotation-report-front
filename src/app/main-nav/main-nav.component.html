@@ -3,10 +3,12 @@
     [mode]="(isHandset$ | async) ? 'over' : 'side'" [opened]="(isHandset$ | async) === false">
     <mat-toolbar>เมนู</mat-toolbar>
     <mat-nav-list>
-      <a mat-list-item [routerLink]="['auth']" *ngIf="!isAuthenticated">เข้าสู่ระบบ</a>
-      <a mat-list-item [routerLink]="['list']" *ngIf="isAuthenticated">รายการใบเสนอราคา</a>
-      <a mat-list-item [routerLink]="['guard']" *ngIf="isAuthenticated">ใบเสนอราคา รปภ</a>
-      <a mat-list-item [routerLink]="['guard-boss']" *ngIf="isAuthenticated">ใบเสนอราคา หน.รปภ.</a>
+      <a mat-list-item [routerLink]="['auth']" [routerLinkActive]="['active-link']" *ngIf="!isAuthenticated">เข้าสู่ระบบ</a>
+      <a mat-list-item [routerLink]="['list']" [routerLinkActive]="['active-link']" *ngIf="isAuthenticated">รายการใบเสนอราคา</a>
+      <a mat-list-item [routerLink]="['guard']" [routerLinkActive]="['active-link']" *ngIf="isAuthenticated">เสนอราคา รปภ</a>
+      <a mat-list-item [routerLink]="['guard-boss']" [routerLinkActive]="['active-link']" *ngIf="isAuthenticated">เสนอราคา
+        หน.รปภ.</a>
+      <a mat-list-item [routerLink]="['equipment']" [routerLinkActive]="['active-link']" *ngIf="isAuthenticated">จัดการอุปกรณ์</a>
       <a mat-list-item (click)=onLogout() *ngIf="isAuthenticated">ออกจากระบบ</a>
     </mat-nav-list>
   </mat-sidenav>
