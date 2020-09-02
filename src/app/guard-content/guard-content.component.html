@@ -27,7 +27,7 @@
                 <div class="col-md-12">
                   <mat-form-field class="example-full-width">
                     <mat-label>สาขาที่ออกใบเสนอราคา<i style="color: #D34346;">*</i></mat-label>
-                    <mat-select [(value)]="officeSelected" [disabled]="disable">
+                    <mat-select [(value)]="officeSelected" [disabled]="disable" (selectionChange)="onChangeOffice()">
                       <mat-option *ngFor="let office of saleOffice" [value]="office.AUTO_ID">
                         {{office.NAME}}
                       </mat-option>
@@ -54,7 +54,7 @@
                 <div class="col-md-6 col-xs-6">
                   <mat-form-field class="example-full-width">
                     <mat-label>บริษัท / ชื่อลูกค้า<i style="color: #D34346;">*</i></mat-label>
-                    <input type="text" matInput  #CUSTOMER [disabled]="disable">
+                    <input type="text" matInput #CUSTOMER [disabled]="disable">
                     <!-- <mat-autocomplete autoActiveFirstOption #auto="matAutocomplete">
                       <mat-option *ngFor="let customer of filteredOptions | async" [value]="customer.NAME">
                         {{customer.NAME}}
@@ -90,6 +90,22 @@
                     <mat-hint align="end">บาท</mat-hint>
                   </mat-form-field>
                 </div>
+
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>ผู้ออกใบเสนอราคา<i style="color: #D34346;">*</i></mat-label>
+                    <input matInput value="" type="text" #EMPLOYEE_NAME [disabled]="disable" [value]="employee_name">
+
+                  </mat-form-field>
+                </div>
+                <div class="col-md-6">
+                  <mat-form-field class="example-full-width">
+                    <mat-label>เบอร์โทรผู้ออกใบเสนอราคา<i style="color: #D34346;">*</i></mat-label>
+                    <input matInput value="" type="text" #EMPLOYEE_MOBILE [disabled]="disable" [value]="employee_mobile">
+
+                  </mat-form-field>
+                </div>
+
 
               </div>
             </mat-card-content>
@@ -207,34 +223,22 @@
             </mat-card-content>
           </mat-card>
 
-
           <mat-card class="m-3" style="width: 100%;background-color: #ffefed; ">
             <mat-card-subtitle style="color: #D34346;">
-              อุปกรณ์เพิ่มพิเศษ <button mat-mini-fab color="warn" type="button" (click)=onAddEquipment()
-                style="float: right;" *ngIf="!disable">
-                <mat-icon>add</mat-icon>
-              </button>
+              อุปกรณ์เพิ่มพิเศษ
             </mat-card-subtitle>
             <mat-card-content>
-              <div class="row" style="display: inline-flex;">
-                <div class="col-md-6" style="display: flex;"
-                  *ngFor="let filterEquipment of filterEquipments; let i = index;">
-                  <mat-form-field class="example-full-width" style="width:80%;padding: 5px;">
-                    <mat-label>อุปกรณ์</mat-label>
-                    <mat-select [(value)]="filterEquipments[i].AUTO_ID" [disabled]="disable">
-                      <mat-option *ngFor="let equipment of  equipments" [value]="equipment.AUTO_ID"
-                        [disabled]="equipment.SELECTED"
-                        [ngStyle]="{'background-color': equipment.TYPE === 1?'white':'#d4fbff'}">
-                        {{equipment.NAME}}
-                      </mat-option>
-                    </mat-select>
-                  </mat-form-field>
-                  <button mat-raised-button color="warn" style="height: 35px;margin-top: 15px;"
-                    (click)="onRemoveEquipment(i)" *ngIf="!disable">ลบ</button>
+              <div class="row">
+                <div class="col-md-4" *ngFor="let equipment of equipments">
+                  <mat-checkbox [(ngModel)]="equipment.CHECK" [ngModelOptions]="{standalone: true}" [disabled]="disable">
+                    {{equipment.NAME}}
+                  </mat-checkbox>
                 </div>
               </div>
             </mat-card-content>
           </mat-card>
+
+
 
           <mat-card class="m-3" style="width: 100%;background-color: #ffefed; ">
             <mat-card-subtitle style="color: #D34346;">

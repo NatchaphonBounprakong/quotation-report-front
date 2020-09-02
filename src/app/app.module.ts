@@ -41,6 +41,7 @@ import { EquipmentComponent } from './equipment/equipment.component';
 import { EquipmentDialogComponent } from './equipment/equipment-dialog/equipment-dialog.component';
 
 
+
 @NgModule({
   declarations: [
     AppComponent,

@@ -27,4 +27,6 @@ export interface quotationPaylod {
   CUSTOMER:string;
   CUSTOMER_CONTACT:string
   CUSTOMER_CONTACT_PHONE:string
+  EMPLOYEE_NAME:string
+  EMPLOYEE_MOBILE:string
 }

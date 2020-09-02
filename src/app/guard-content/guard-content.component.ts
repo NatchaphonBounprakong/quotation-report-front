@@ -9,6 +9,8 @@ import { forkJoin, Observable } from 'rxjs';
 import { FormControl } from '@angular/forms';
 import { saveAs } from 'file-saver';
 import { startWith, map } from 'rxjs/operators';
+import { URLS } from '../../assets/config'
+
 import {
   MatSnackBar, MatSnackBarHorizontalPosition,
   MatSnackBarVerticalPosition,
@@ -67,16 +69,23 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('CUSTOMER_CONTACT') CUSTOMER_CONTACT: ElementRef;
   @ViewChild('CUSTOMER_CONTACT_PHONE') CUSTOMER_CONTACT_PHONE: ElementRef;
   @ViewChild('CUSTOMER') CUSTOMER: ElementRef;
+  @ViewChild('EMPLOYEE_NAME') EMPLOYEE_NAME: ElementRef;
+  @ViewChild('EMPLOYEE_MOBILE') EMPLOYEE_MOBILE: ElementRef;
 
   term = new FormControl();
   last: string
-
+  employee_name: string
+  employee_mobile: string
   horizontalPosition: MatSnackBarHorizontalPosition = 'end';
   horizontalPosition2: MatSnackBarHorizontalPosition = 'start';
   verticalPosition: MatSnackBarVerticalPosition = 'top';
 
   constructor(private masterService: MasterService, private quotationService: QuotationService, private authService: AuthService, private route: ActivatedRoute, private router: Router, private pdfService: PdfService, private _snackBar: MatSnackBar, private _notiSnackbar: MatSnackBar, private _errorSneakBar: MatSnackBar) {
     this.last = quotationService.last;
+    let user = JSON.parse(localStorage.getItem("quotauser"))
+
+    this.employee_name = user.name;
+    this.employee_mobile = user.mobile;
   }
 
   ngOnInit(): void {
@@ -139,6 +148,15 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  openErrorSnackBar2(message: string) {
+    this._notiSnackbar.open(message, "", {
+      duration: 3000,
+      panelClass: ['red-snackbar'],
+      horizontalPosition: this.horizontalPosition,
+      verticalPosition: this.verticalPosition,
+    });
+  }
+
   openErrorSnackBar(data) {
     this._errorSneakBar.openFromComponent(ErrorSnackComponent, {
       duration: 5000,
@@ -152,7 +170,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
   clossSnackBar() {
     this._snackBar.dismiss();
   }
-
+  //private url: string = URLS.api
   onDownloadPdf() {
     this.loadingButton = true;
     this.openSnackBar("กำลังดาวน์โหลด pdf", "กรุณารอซักครู่")
@@ -161,14 +179,39 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
         this.pdfService.download(o.result, this.isBoss).subscribe(k => {
           this.loadingButton = false;
           var blob = new Blob([k], { type: 'application/pdf' });
-          saveAs(blob, 'Quotation' + o.result.no + '.pdf');
+          this.quotationService.sendPdf(blob, 'Quotation' + o.result.no.replace("/", "_") + '.pdf').subscribe(k => {
+            window.open(URLS.api.replace("/api/", "") + "/pdf/" + 'Quotation' + o.result.no.replace("/", "_") + '.pdf', "_blank");
+            setTimeout(() => {
+              this.quotationService.deletePdf('Quotation' + o.result.no.replace("/", "_") + '.pdf').subscribe();
+            }, 1000 * 60 * 30);
+            //this.quotationService.deletePdf('Quotation' + o.result.no.replace("/", "_") + '.pdf').subscribe();
+          })
+          //this.downLoadFile(blob, 'Quotation' + o.result.no.replace("/", "_") + '.pdf');
           //alert("ดาวน์โหลดใบเสนอราคาเรียบร้อย");
           this.openNotiSnackBar("ดาวน์โหลดใบเสนอราคาเรียบร้อย");
           //this.clossSnackBar();
+        }, error => {
+          console.log("PDF Error", error)
+          this.openErrorSnackBar2("ไม่สามารถดาวน์โหลด PDF ได้กรุณาลองใหม่อีกครั้ง " + error.message)
         })
       }
 
     })
+  }
+
+  downLoadFile(data: Blob, fileName) {
+    let a = document.createElement("a");
+    document.body.appendChild(a);
+    //a.style = "display: none";
+
+    let blob = data
+    let url = window.URL.createObjectURL(blob);
+
+    a.href = url;
+    a.download = fileName;
+    a.click();
+
+    window.URL.revokeObjectURL(url);
   }
 
 
@@ -185,15 +228,26 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
     this.CUSTOMER.nativeElement.value = this.quotation.CUSTOMER
     this.CUSTOMER_CONTACT.nativeElement.value = this.quotation.CUSTOMER_CONTACT
     this.CUSTOMER_CONTACT_PHONE.nativeElement.value = this.quotation.CUSTOMER_CONTACT_PHONE
+    this.EMPLOYEE_NAME.nativeElement.value = this.quotation.EMPLOYEE_NAME
+    this.EMPLOYEE_MOBILE.nativeElement.value = this.quotation.EMPLOYEE_MOBILE
+
     this.customerContactSelected = this.quotation.CONTACT_ID
     this.officeSelected = this.quotation.SALE_OFFICE_ID
     this.id = this.quotation.AUTO_ID
     this.isBoss = this.quotation.TYPE === 2 ? true : false
     this.type = this.quotation.TYPE
     this.filterEquipments = [];
-    this.quotation.EQUIPMENT_ID.forEach(element => {
-      this.filterEquipments.push({ AUTO_ID: element })
-    });
+
+
+    this.equipments.forEach(o => {
+      if (this.quotation.EQUIPMENT_ID.includes(o.AUTO_ID)) {
+        o.CHECK = true
+      } else {
+        o.CHECK = false
+      }
+    })
+
+
     this.fakeNotes = this.quotation.NOTE
     this.notes = this.quotation.NOTE
 
@@ -363,6 +417,7 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   onSave(isCopy: boolean = false) {
+    console.log(this.equipments)
     if (this.validate()) {
 
       if (confirm("ต้องการบันทึกข้อมูลใช่หรือไม่?")) {
@@ -372,7 +427,8 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
         let quotation: quotationPaylod = {
           AUTO_ID: this.isEditMode ? this.id : 0,
           NO: "",
-          EQUIPMENT_ID: this.filterEquipments.filter(o => o.AUTO_ID !== 0).map(o => o.AUTO_ID),
+          //EQUIPMENT_ID: this.filterEquipments.filter(o => o.AUTO_ID !== 0).map(o => o.,AUTO_ID),
+          EQUIPMENT_ID: this.equipments.filter(o => o.CHECK === true).map(o => o.AUTO_ID),
           NOTE: this.notes.filter(o => o !== ""),
           TYPE: this.isEditMode ? this.type : this.isBoss ? 2 : 1,
           BOSS_RATE: this.BOSS_RATE ? +this.BOSS_RATE.nativeElement.value : 0,
@@ -392,6 +448,8 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
           CUSTOMER: this.CUSTOMER.nativeElement.value,
           CUSTOMER_CONTACT: this.CUSTOMER_CONTACT.nativeElement.value,
           CUSTOMER_CONTACT_PHONE: this.CUSTOMER_CONTACT_PHONE.nativeElement.value,
+          EMPLOYEE_NAME: this.EMPLOYEE_NAME.nativeElement.value,
+          EMPLOYEE_MOBILE: this.EMPLOYEE_MOBILE.nativeElement.value
         }
 
         let payload = JSON.stringify(quotation);
@@ -546,5 +604,10 @@ export class GuardContentComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
+  onChangeOffice() {
+    this.quotationService.getNo(this.officeSelected).subscribe(o => {
+      this.last = o.result
+    })
+  }
 
 }
